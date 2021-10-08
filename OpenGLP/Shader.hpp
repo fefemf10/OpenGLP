@@ -2,6 +2,7 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <filesystem>
 #include <map>
 #include <vector>
 #include <GLEW/glew.h>
@@ -13,7 +14,7 @@ public:
 	Shader();
 	Shader(Shader& other);
 	Shader(Shader&& other) noexcept;
-	Shader(const std::vector<std::string>& shaderFilePaths);
+	Shader(std::initializer_list<std::filesystem::path> shaderFilePaths);
 	~Shader();
 	void bindAttrib(GLuint index, const std::string& name);
 	void link();
@@ -29,6 +30,6 @@ private:
 	GLuint program, vs, fs, cs;
 	std::map<std::string, GLint> locations;
 	GLuint compileShader(GLenum type, const std::string& source);
-	std::string getStringShader(const std::string& path);
+	std::string getStringShader(const std::filesystem::path& path);
 };
 

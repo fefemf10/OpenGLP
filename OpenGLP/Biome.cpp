@@ -1,9 +1,11 @@
 #include "Biome.hpp"
+#include <filesystem>
+#include <fstream>
 #include <GLM/glm.hpp>
 #include "stb_image.hpp"
 #include <JSON/json.hpp>
-#include <filesystem>
-#include <fstream>
+#include "RM.hpp"
+
 
 std::map<Enums::Biome, Biomes::Biome> Biomes::biomes;
 
@@ -13,8 +15,6 @@ namespace Biomes
 	void loadBiomes()
 	{
 		using nlohmann::json;
-		namespace fs = std::filesystem;
-		fs::path path = "json\\biomes\\";
 		json j;
 		std::ifstream jsonFile;
 
@@ -24,8 +24,8 @@ namespace Biomes
 		unsigned char* grass;
 		unsigned char* foliage;
 		stbi_set_flip_vertically_on_load(false);
-		grass = stbi_load("textures\\colormap\\grass.png", &width, &height, &bpp, 0);
-		foliage = stbi_load("textures\\colormap\\foliage.png", &width, &height, &bpp, 0);
+		grass = stbi_load("assets\\minecraft\\textures\\colormap\\grass.png", &width, &height, &bpp, 0);
+		foliage = stbi_load("assets\\minecraft\\textures\\colormap\\foliage.png", &width, &height, &bpp, 0);
 
 		auto getColor = [&](bool downfall, float temp, float down, int& color)
 		{
@@ -40,7 +40,7 @@ namespace Biomes
 				color = grass[(y * 256 + x) * 4] << 16 | grass[(y * 256 + x) * 4 + 1] << 8 | grass[(y * 256 + x) * 4 + 2];
 			}
 		};
-		for (const auto& t : fs::directory_iterator(path))
+		for (const auto& t : std::filesystem::directory_iterator(paths::assets / paths::minecraft / paths::json / "biomes"))
 		{
 			jsonFile.open(t);
 			jsonFile >> j;

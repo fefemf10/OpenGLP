@@ -26,16 +26,16 @@ Shader::Shader(Shader&& other) noexcept
 	other.locations.clear();
 }
 
-Shader::Shader(const std::vector<std::string>& shaderFilePaths) : program{}, vs{}, fs{}, cs{}
+Shader::Shader(std::initializer_list<std::filesystem::path> shaderFilePaths) : program{}, vs{}, fs{}, cs{}
 {
 	program = glCreateProgram();
 	for (const auto& shader : shaderFilePaths)
 	{
-		if (shader.rfind("vert") != std::string::npos)
+		if (shader.string().rfind("vert") != std::string::npos)
 			vs = compileShader(GL_VERTEX_SHADER, Shader::getStringShader(shader));
-		else if (shader.rfind("frag") != std::string::npos)
+		else if (shader.string().rfind("frag") != std::string::npos)
 			fs = compileShader(GL_FRAGMENT_SHADER, Shader::getStringShader(shader));
-		else if (shader.rfind("comp") != std::string::npos)
+		else if (shader.string().rfind("comp") != std::string::npos)
 			cs = compileShader(GL_COMPUTE_SHADER, Shader::getStringShader(shader));
 	}
 }
@@ -155,7 +155,7 @@ GLuint Shader::compileShader(GLenum type, const std::string& source)
 	return id;
 }
 
-std::string Shader::getStringShader(const std::string& path)
+std::string Shader::getStringShader(const std::filesystem::path& path)
 {
 	std::ifstream file(path, std::ios::in);
 	std::string code{ std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>() };

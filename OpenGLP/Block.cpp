@@ -28,7 +28,7 @@ namespace Blocks
 	}
 	void loadBlocks()
 	{
-		std::ifstream jsonBlocksFile("json\\blocks.json", std::ios::in);
+		std::ifstream jsonBlocksFile(paths::assets / paths::minecraft / paths::json / "blocks.json", std::ios::in);
 		using nlohmann::json;
 		json j;
 		jsonBlocksFile >> j;
@@ -60,7 +60,7 @@ namespace Blocks
 	void loadBlockMaterials()
 	{
 		using nlohmann::json;
-		std::ifstream jsonMaterials("json\\materials.json", std::ios::in);
+		std::ifstream jsonMaterials(paths::assets / paths::minecraft / paths::json / "materials.json", std::ios::in);
 		json j;
 		jsonMaterials >> j;
 		jsonMaterials.close();
@@ -71,7 +71,7 @@ namespace Blocks
 			blockMaterials[static_cast<size_t>(Enums::iMaterial(nameMaterial))] = value;
 		}
 		j.clear();
-		jsonMaterials.open("json\\blocksMaterial.json");
+		jsonMaterials.open(paths::assets / paths::minecraft / paths::json / "blocksMaterial.json");
 		jsonMaterials >> j;
 		jsonMaterials.close();
 		for (auto& [key, value] : j.items())
@@ -84,7 +84,6 @@ namespace Blocks
 
 	void loadBlockStates()
 	{
-		namespace fs = std::filesystem;
 		using nlohmann::json;
 		const std::string name = "minecraft:block/";
 		std::ifstream jsonFile;
@@ -92,7 +91,7 @@ namespace Blocks
 		for (size_t i = 0; i < blockStates.size(); ++i)
 		{
 			std::string tmpName = Enums::sBlock[i];
-			jsonFile.open("blockstates\\" + tmpName + ".json");
+			jsonFile.open(paths::assets / paths::minecraft / paths::blockstates /  (tmpName + ".json"));
 			json j;
 			jsonFile >> j;
 			jsonFile.close();
@@ -239,11 +238,9 @@ namespace Blocks
 
 	void loadModels()
 	{
-		namespace fs = std::filesystem;
 		using nlohmann::json;
-		const fs::path path = "models\\block\\";
 		std::ifstream jsonFile;
-		for (const auto& t : fs::directory_iterator(path))
+		for (const auto& t : std::filesystem::directory_iterator(paths::assets / paths::minecraft / paths::models / "block"))
 		{
 			bool flag{};
 			const std::string tmpName = "minecraft:block/" + t.path().stem().string();
@@ -392,10 +389,8 @@ namespace Blocks
 	{
 		RM::loadAtlas("blocks", TextureAtlas(1, { 16, 16, 1536 }, GL_RGBA8));
 		TextureAtlas& atlas = RM::getAtlas("blocks");
-		namespace fs = std::filesystem;
-		const fs::path path = "textures\\block\\";
 		const std::string name = "minecraft:block/";
-		for (const auto& t : fs::directory_iterator(path))
+		for (const auto& t : std::filesystem::directory_iterator(paths::assets / paths::minecraft / paths::textures / "block"))
 		{
 			if (t.path().extension() != ".mcmeta")
 				atlas.loadTexture(name + t.path().stem().string(), t.path().string());

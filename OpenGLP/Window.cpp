@@ -53,11 +53,11 @@ void Window::loop()
 	srand(static_cast<unsigned int>(time(0)));
 	//glEnable(GL_DEBUG_OUTPUT);
 	//glDebugMessageCallback(Window::message_callback, nullptr);
-	RM::loadShader("crosshair", Shader({ "crosshair.vert", "crosshair.frag" }));
+	RM::loadShader("crosshair", Shader({ paths::assets / paths::minecraft / paths::shaders / "crosshair.vert", paths::assets / paths::minecraft / paths::shaders / "crosshair.frag" }));
 	Shader& crosshairShader = RM::getShader("crosshair");
 	crosshairShader.link();
 
-	RM::loadShader("shader", Shader({ "shader.vert", "shader.frag" }));
+	RM::loadShader("shader", Shader({ paths::assets / paths::minecraft / paths::shaders / "shader.vert", paths::assets / paths::minecraft / paths::shaders / "shader.frag" }));
 	Shader& shader = RM::getShader("shader");
 	shader.link();
 	{

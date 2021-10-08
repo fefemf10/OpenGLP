@@ -1,7 +1,20 @@
 #pragma once
 #include <unordered_map>
+#include <filesystem>
 #include "Shader.hpp"
 #include "TextureAtlas.hpp"
+
+namespace paths
+{
+	static std::filesystem::path assets("assets");
+	static std::filesystem::path minecraft("minecraft");
+	static std::filesystem::path blockstates("blockstates");
+	static std::filesystem::path json("json");
+	static std::filesystem::path models("models");
+	static std::filesystem::path shaders("shaders");
+	static std::filesystem::path textures("textures");
+};
+
 class RM
 {
 public:
