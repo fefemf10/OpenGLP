@@ -73,15 +73,8 @@ namespace Blocks
 		std::vector<Element> elements;
 		bool ambientocclusion{};
 	};
-	struct State
-	{
-		std::map<std::string, std::string> properties;
-		uint16_t id{};
-		bool defaultState{};
-	};
 	struct Block
 	{
-		std::string name;
 		//std::map<std::string, std::vector<std::string>> properties;
 		//std::vector<State> states;
 		Enums::Material material{};

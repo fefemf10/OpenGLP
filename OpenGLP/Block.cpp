@@ -37,8 +37,6 @@ namespace Blocks
 		for (auto& [key, value] : j.items())
 		{
 			Block b;
-			b.name = key;
-			b.name.insert(10, "block/");
 			std::string blockName = key.substr(10);
 			const size_t index = static_cast<size_t>(Enums::iBlock(blockName));
 			/*if (value.contains("properties"))

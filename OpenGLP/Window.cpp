@@ -61,20 +61,16 @@ void Window::loop()
 	Shader& shader = RM::getShader("shader");
 	shader.link();
 	{
-		Blocks::loadBlocks(); Blocks::loadBlockMaterials();
-		Blocks::loadBlockStates(); Blocks::loadModels();
-		Biomes::loadBiomes();
-		/*ThreadPool pool(2);
-		pool.enqueue([]() {  });
-		pool.enqueue([]() {  });
-		pool.enqueue();*/
+		ThreadPool pool(2);
+		pool.enqueue([]() { Blocks::loadBlocks(); Blocks::loadBlockMaterials(); });
+		pool.enqueue([]() { Blocks::loadBlockStates(); Blocks::loadModels(); });
+		pool.enqueue(&Biomes::loadBiomes);
 	}
 	Blocks::loadTextures();
 	
 
 
 	VAO crosshair;
-	crosshair.bind();
 	crosshair.addVBO(1);
 	crosshair.setTypeIndices(GL_UNSIGNED_BYTE);
 	crosshair.loadData(0, std::vector<glm::vec2>{ {-0.01f, -0.01f }, { 0.01f, 0.01f }, { -0.01f, 0.01f }, { 0.01f, -0.01f } });
@@ -82,8 +78,6 @@ void Window::loop()
 
 	Player player;
 	player.setRenderDistance(dist);
-	//player.setPosition({144, 500, 144});
-	//player.setPosition({112, 400, 112});
 	Camera camera(player);
 	World world("1189", player, camera);
 
