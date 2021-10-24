@@ -4,18 +4,14 @@
 #include <GLM/glm.hpp>
 #include "Block.hpp"
 #include "VAO.hpp"
-
-
-struct PaletteItem
-{
-	Enums::Block id{};
-	std::map<Enums::PropertiesBlock, uint8_t> properties;
-};
+#include "CubeHelper.hpp"
+class World;
 
 struct Section
 {
 	static PaletteItem stone;
-	Section();
+	Section(World& world);
+	Section(const Section& other) noexcept;
 	template<typename T>
 	inline T swapEndian(T value)
 	{
@@ -34,13 +30,13 @@ struct Section
 	std::vector<int64_t> dataBiome;
 	std::vector<PaletteItem> blockPalette;
 	std::vector<Enums::Biome> biomePalette;
-	Section* neighbors[6]{};
+	World& world;
 	/*5
 	  1
 	2   3
 	  4
 	  0*/
-	int16_t height{};
+	glm::ivec3 position{};
 	const PaletteItem& getBlock(const glm::i8vec3& blockPos);
 	uint8_t bitsPerBlock{};
 	uint8_t bitsPerBiome{};
@@ -53,18 +49,22 @@ struct Section
 	GLuint countVertexTransperent{};
 	bool modified{};
 	bool buffer{};
+	bool buffert{};
 	bool visible{};
-	void genMesh(const glm::ivec2& position);
+	bool visiblet{};
+	void genMesh();
 	void loadBuffer();
 	void draw();
 	void drawTransperent();
 	std::vector<glm::vec3> vertex;
 	std::vector<glm::vec3> color;
 	std::vector<glm::vec3> UV;
+	std::vector<uint8_t> AO;
 	std::vector<GLuint> indicies;
 	std::vector<glm::vec3> vertext;
 	std::vector<glm::vec3> colort;
 	std::vector<glm::vec3> UVt;
+	std::vector<uint8_t> AOt;
 	std::vector<GLuint> indiciest;
 	VAO vao;
 	VAO vaoTransperent;

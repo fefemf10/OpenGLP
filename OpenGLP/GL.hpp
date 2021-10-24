@@ -5,7 +5,9 @@
 struct Settings
 {
 	int width = 1280;
+	int widthf = 1920;
 	int height = 720;
+	int heightf = 1080;
 	bool fullscreen = false;
 	bool vsync = true;
 };

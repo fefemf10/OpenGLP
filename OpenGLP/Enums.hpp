@@ -130,6 +130,7 @@ namespace Enums
 			if (sMaterial[i] == s)
 				return static_cast<Material>(i);
 		}
+		return static_cast<Material>(0);
 	}
 	enum class Biome : unsigned char
 	{
@@ -413,6 +414,7 @@ namespace Enums
 			if (sBiome[i] == s)
 				return static_cast<Biome>(i);
 		}
+		return static_cast<Biome>(0);
 	}
 	enum class Block : unsigned short
 	{
@@ -2223,5 +2225,6 @@ namespace Enums
 			if (sBlock[i] == s)
 				return static_cast<Block>(i);
 		}
+		return static_cast<Block>(0);
 	}
 }

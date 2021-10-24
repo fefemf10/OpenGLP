@@ -51,8 +51,8 @@ Window::~Window()
 void Window::loop()
 {
 	srand(static_cast<unsigned int>(time(0)));
-	//glEnable(GL_DEBUG_OUTPUT);
-	//glDebugMessageCallback(Window::message_callback, nullptr);
+	glEnable(GL_DEBUG_OUTPUT);
+	glDebugMessageCallback(Window::message_callback, nullptr);
 	RM::loadShader("crosshair", Shader({ paths::assets / paths::minecraft / paths::shaders / "crosshair.vert", paths::assets / paths::minecraft / paths::shaders / "crosshair.frag" }));
 	Shader& crosshairShader = RM::getShader("crosshair");
 	crosshairShader.link();
@@ -86,7 +86,6 @@ void Window::loop()
 	int typeblock = 1;
 	bool menu = true;
 	bool polygon = true;
-	bool vsync = true;
 	UBO bufferTransform(sizeof(glm::mat4) * 2, 0);
 	bufferTransform.bind();
 	bufferTransform.loadData(0, camera.getProjection());
@@ -139,8 +138,24 @@ void Window::loop()
 
 		if (ImGui::IsKeyReleased(GLFW_KEY_2))
 		{
-			vsync ^= 1;
-			glfwSwapInterval(vsync);
+			GL::settings.vsync ^= 1;
+			glfwSwapInterval(GL::settings.vsync);
+		}
+		if (ImGui::IsKeyReleased(GLFW_KEY_4))
+		{
+			GL::settings.fullscreen ^= 1;
+			const GLFWvidmode* monitor = glfwGetVideoMode(glfwGetPrimaryMonitor());
+			if (GL::settings.fullscreen)
+			{
+				glfwSetWindowMonitor(window, glfwGetPrimaryMonitor(), (monitor->width - GL::settings.widthf) / 2, (monitor->height - GL::settings.heightf) / 2, GL::settings.widthf, GL::settings.heightf, 60);
+				glViewport(0, 0, GL::settings.widthf, GL::settings.heightf);
+			}
+			else
+			{
+				glfwSetWindowMonitor(window, nullptr, (monitor->width - GL::settings.width) / 2, (monitor->height - GL::settings.height) / 2, GL::settings.width, GL::settings.height, 60);
+				glViewport(0, 0, GL::settings.width, GL::settings.height);
+			}
+			glfwSwapInterval(GL::settings.vsync);
 		}
 		float dt = ImGui::GetIO().DeltaTime;
 		player.update(dt);

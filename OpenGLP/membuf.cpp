@@ -10,7 +10,7 @@ namespace std
 	streambuf::pos_type membuf::seekoff(off_type off, ios_base::seekdir dir, ios_base::openmode which)
 	{
 		if (dir == std::ios_base::cur)
-			gbump(off);
+			gbump(static_cast<int>(off));
 		else if (dir == std::ios_base::end)
 			setg(eback(), egptr() + off, egptr());
 		else if (dir == std::ios_base::beg)

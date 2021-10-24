@@ -27,6 +27,7 @@ World::World(const std::string& name, Player& player, Camera& camera) : player(p
 			chunks[z][x] = new Chunk(chunks);
 		}
 	}
+	endLocalPosChunk = {a-1, a-1};
 	loadChunks();
 	firstLoad = false;
 }
@@ -41,6 +42,29 @@ std::string World::getBlock(const glm::ivec3& position)
 	return "minecraft:air";
 }
 
+Chunk* World::getChunk(const glm::ivec2& position)
+{
+	//glm::ivec2 localPos = position - chunks[0][0]->position;
+	int x = static_cast<int32_t>(player.getPosition().x);
+	int z = static_cast<int32_t>(player.getPosition().z);
+	glm::ivec2 playerPos = glm::ivec2(x >> 4, z >> 4);
+	glm::ivec2 startChunk = playerPos - glm::ivec2(player.getRenderDistance());
+	glm::ivec2 localPos = position - startChunk;
+	if (validateLocalPosChunk(localPos))
+		return chunks[localPos.y][localPos.x];
+	else
+		return nullptr;
+}
+
+Section* World::getSection(const glm::ivec3& position)
+{
+	Chunk* chunk = getChunk({ position.x, position.z });
+	if (chunk)
+		return chunk->getSection(position.y);
+	else
+		return nullptr;
+}
+
 void World::setBlock(const glm::ivec3& position, const std::string& id)
 {
 
@@ -48,7 +72,6 @@ void World::setBlock(const glm::ivec3& position, const std::string& id)
 
 void World::loadChunks()
 {
-
 	int xp = static_cast<int32_t>(player.getPosition().x);
 	int zp = static_cast<int32_t>(player.getPosition().z);
 	glm::ivec2 playerPos = glm::ivec2(xp >> 4, zp >> 4);
@@ -196,8 +219,8 @@ void World::update(const float& dt)
 		if (region.is_open())
 		{
 			regions[regionPos].deserialize(region, chunkPos.x, chunkPos.y);
-			region.close();
 		}
+		region.close();
 		if ((local.x >= 0 && local.x < a) && (local.y >= 0 && local.y < a))
 		{
 			nbt::NBT chunk = regions[regionPos].chunks[chunkPos.y * 32 + chunkPos.x];
@@ -211,16 +234,20 @@ void World::update(const float& dt)
 			chunks[local.y][local.x]->position.y = level.at<nbt::TagInt>("zPos");
 			chunks[local.y][local.x]->localPosition = local;
 			std::vector<nbt::TagCompound>& sections = nbt::get_list<nbt::TagCompound>(level.at<nbt::TagList>("Sections"));
-			chunks[local.y][local.x]->sections.resize(sections.size());
+			chunks[local.y][local.x]->sections.resize(sections.size(), Section(*this));
 			for (size_t i = 0; i < sections.size(); ++i)
 			{
 				if (sections[i].base.contains("BlockLight"))
 					chunks[local.y][local.x]->sections[i].blockLight = sections[i].at<nbt::TagByteArray>("BlockLight");
+				else
+					chunks[local.y][local.x]->sections[i].blockLight = std::vector<int8_t>(2048, 0);
 				if (sections[i].base.contains("SkyLight"))
 					chunks[local.y][local.x]->sections[i].skyLight = sections[i].at<nbt::TagByteArray>("SkyLight");
+				else
+					chunks[local.y][local.x]->sections[i].skyLight = std::vector<int8_t>(2048, 0);
 				{
 					int h = sections[i].at<nbt::TagByte>("Y");
-					chunks[local.y][local.x]->sections[i].height = h;
+					chunks[local.y][local.x]->sections[i].position = { pos.x, h, pos.y };
 				}
 				nbt::TagCompound& blockStates = sections[i].at<nbt::TagCompound>("block_states");
 				nbt::TagCompound& biomes = sections[i].at<nbt::TagCompound>("biomes");
@@ -357,29 +384,29 @@ void World::update(const float& dt)
 			//	//poolChunks.enqueue(std::bind(&Chunk::generateChunk, chunks[local.y][local.x], pos, seed));
 			//	
 			//}
-			chunks[local.y][local.x]->findNeighbors();
+			//chunks[local.y][local.x]->findNeighbors();
 			chunks[local.y][local.x]->modified = true;
 			if ((local.x >= 0 && local.x < a) && (local.y - 1 >= 0 && local.y - 1 < a))
 			{
-				chunks[local.y - 1][local.x]->findNeighbors();
+				//chunks[local.y - 1][local.x]->findNeighbors();
 				chunks[local.y - 1][local.x]->modified = true;
 				//chunks[local.y - 1][local.x]->genMesh();
 			}
 			if ((local.x >= 0 && local.x < a) && (local.y + 1 >= 0 && local.y + 1 < a))
 			{
-				chunks[local.y + 1][local.x]->findNeighbors();
+				//chunks[local.y + 1][local.x]->findNeighbors();
 				chunks[local.y + 1][local.x]->modified = true;
 				//chunks[local.y + 1][local.x]->genMesh();
 			}
 			if ((local.x - 1 >= 0 && local.x - 1 < a) && (local.y >= 0 && local.y < a))
 			{
-				chunks[local.y][local.x - 1]->findNeighbors();
+				//chunks[local.y][local.x - 1]->findNeighbors();
 				chunks[local.y][local.x - 1]->modified = true;
 				//chunks[local.y][local.x - 1]->genMesh();
 			}
 			if ((local.x + 1 >= 0 && local.x + 1 < a) && (local.y >= 0 && local.y < a))
 			{
-				chunks[local.y][local.x + 1]->findNeighbors();
+				//chunks[local.y][local.x + 1]->findNeighbors();
 				chunks[local.y][local.x + 1]->modified = true;
 				//chunks[local.y][local.x + 1]->genMesh();
 			}
@@ -449,6 +476,11 @@ void World::draw()
 		countVertexTransperent += chunks[pos.y][pos.x]->countVertexTransperent;
 	}
 	allVertex = countVertex + countVertexTransperent;
+}
+
+bool World::validateLocalPosChunk(const glm::ivec2& position)
+{
+	return !(position.x < 0 || position.y < 0 || position.x > endLocalPosChunk.x || position.y > endLocalPosChunk.y);
 }
 
 std::string World::rayCast(const glm::vec3& pos, const glm::vec3& dir, float maxDist, glm::vec3& end, glm::vec3& norm, glm::vec3& iend)

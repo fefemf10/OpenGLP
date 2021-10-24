@@ -122,6 +122,13 @@ void TextureAtlas::loadTexture(const std::string& name, const std::string& path)
 	stbi_image_free(data);
 }
 
+const GLsizei& TextureAtlas::at(const std::string& name) const
+{
+	if (ta.contains(name))
+		return ta.at(name).frameID;
+	return t.at(name);
+}
+
 
 GLsizei& TextureAtlas::operator[](const std::string& name)
 {

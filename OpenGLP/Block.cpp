@@ -399,20 +399,20 @@ namespace Blocks
 		//std::random_device rd;
 		//std::mt19937 gen(rd());
 		std::erase_if(prop, [&](const std::pair<Enums::PropertiesBlock, uint8_t>& item) { return !(*this->variants.begin()).first.contains(item.first);  });
-		
-		if (variants.contains(prop))
-		{
-			//const std::vector<Variant>& variants = this->variants[prop].first;
-			//std::uniform_int_distribution<uint32_t> d(0u, variants.size() - 1u);
-			//return variants[0];
-			return this->variants[prop][0];
-		}
-		else
-		{
-			//const std::vector<Variant>& variants = (*this->variants.begin()).second.first;
-			//std::uniform_int_distribution<uint32_t> d(0u, variants.size() - 1u);
-			//return variants[0];
-			return (*this->variants.begin()).second[0];
-		}
+		return this->variants[prop][0];
+		//if (variants.contains(prop))
+		//{
+		//	//const std::vector<Variant>& variants = this->variants[prop].first;
+		//	//std::uniform_int_distribution<uint32_t> d(0u, variants.size() - 1u);
+		//	//return variants[0];
+		//	
+		//}
+		//else
+		//{
+		//	//const std::vector<Variant>& variants = (*this->variants.begin()).second.first;
+		//	//std::uniform_int_distribution<uint32_t> d(0u, variants.size() - 1u);
+		//	//return variants[0];
+		//	return (*this->variants.begin()).second[0];
+		//}
 	}
 }

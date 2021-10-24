@@ -1,4 +1,6 @@
 #pragma once
+#include <GLM/glm.hpp>
+#include <string_view>
 namespace Enums
 {
 	enum class PropertiesBlock
@@ -153,6 +155,7 @@ namespace Enums
 			if (sPropertiesBlock[i] == s)
 				return static_cast<PropertiesBlock>(i);
 		}
+		return static_cast<PropertiesBlock>(0);
 	}
 	enum class Attachment : unsigned char
 	{
@@ -175,6 +178,7 @@ namespace Enums
 			if (sAttachment[i] == s)
 				return static_cast<Attachment>(i);
 		}
+		return static_cast<Attachment>(0);
 	}
 	enum class Axis : unsigned char
 	{
@@ -195,6 +199,7 @@ namespace Enums
 			if (sAxis[i] == s)
 				return static_cast<Axis>(i);
 		}
+		return static_cast<Axis>(0);
 	}
 	enum class East : unsigned char
 	{
@@ -215,6 +220,7 @@ namespace Enums
 			if (sEast[i] == s)
 				return static_cast<East>(i);
 		}
+		return static_cast<East>(0);
 	}
 	enum class Face : unsigned char
 	{
@@ -235,6 +241,7 @@ namespace Enums
 			if (sFace[i] == s)
 				return static_cast<Face>(i);
 		}
+		return static_cast<Face>(0);
 	}
 	enum class Direction : unsigned char
 	{
@@ -261,6 +268,25 @@ namespace Enums
 			if (sFacing[i] == s)
 				return static_cast<Direction>(i);
 		}
+		return static_cast<Direction>(0);
+	}
+	constexpr glm::ivec3 getVecFacing(Direction d)
+	{
+		switch (d)
+		{
+		case Enums::Direction::EAST:
+			return glm::ivec3(1, 0, 0);
+		case Enums::Direction::WEST:
+			return glm::ivec3(-1, 0, 0);
+		case Enums::Direction::UP:
+			return glm::ivec3(0, 1, 0);
+		case Enums::Direction::DOWN:
+			return glm::ivec3(0, -1, 0);
+		case Enums::Direction::SOUTH:
+			return glm::ivec3(0, 0, 1);
+		case Enums::Direction::NORTH:
+			return glm::ivec3(0, 0, -1);
+		}
 	}
 	enum class Half : unsigned char
 	{
@@ -283,6 +309,7 @@ namespace Enums
 			if (sHalf[i] == s)
 				return static_cast<Half>(i);
 		}
+		return static_cast<Half>(0);
 	}
 	enum class Hinge : unsigned char
 	{
@@ -301,6 +328,7 @@ namespace Enums
 			if (sHinge[i] == s)
 				return static_cast<Hinge>(i);
 		}
+		return static_cast<Hinge>(0);
 	}
 	enum class Instrument : unsigned char
 	{
@@ -345,6 +373,7 @@ namespace Enums
 			if (sInstrument[i] == s)
 				return static_cast<Instrument>(i);
 		}
+		return static_cast<Instrument>(0);
 	}
 	enum class Leaves : unsigned char
 	{
@@ -365,6 +394,7 @@ namespace Enums
 			if (sLeaves[i] == s)
 				return static_cast<Leaves>(i);
 		}
+		return static_cast<Leaves>(0);
 	}
 	enum class North : unsigned char
 	{
@@ -385,6 +415,7 @@ namespace Enums
 			if (sNorth[i] == s)
 				return static_cast<North>(i);
 		}
+		return static_cast<North>(0);
 	}
 	enum class Mode : unsigned char
 	{
@@ -411,6 +442,7 @@ namespace Enums
 			if (sMode[i] == s)
 				return static_cast<Mode>(i);
 		}
+		return static_cast<Mode>(0);
 	}
 	enum class Orientation : unsigned char
 	{
@@ -449,6 +481,7 @@ namespace Enums
 			if (sOrientation[i] == s)
 				return static_cast<Orientation>(i);
 		}
+		return static_cast<Orientation>(0);
 	}
 	enum class Part : unsigned char
 	{
@@ -467,6 +500,7 @@ namespace Enums
 			if (sPart[i] == s)
 				return static_cast<Part>(i);
 		}
+		return static_cast<Part>(0);
 	}
 	enum class SculkSensorPhase : unsigned char
 	{
@@ -487,6 +521,7 @@ namespace Enums
 			if (sSculkSensorPhase[i] == s)
 				return static_cast<SculkSensorPhase>(i);
 		}
+		return static_cast<SculkSensorPhase>(0);
 	}
 	enum class Shape : unsigned char
 	{
@@ -531,6 +566,7 @@ namespace Enums
 			if (sShape[i] == s)
 				return static_cast<Shape>(i);
 		}
+		return static_cast<Shape>(0);
 	}
 	enum class South : unsigned char
 	{
@@ -551,6 +587,7 @@ namespace Enums
 			if (sSouth[i] == s)
 				return static_cast<South>(i);
 		}
+		return static_cast<South>(0);
 	}
 	enum class Thickness : unsigned char
 	{
@@ -575,6 +612,7 @@ namespace Enums
 			if (sThickness[i] == s)
 				return static_cast<Thickness>(i);
 		}
+		return static_cast<Thickness>(0);
 	}
 	enum class Tilt : unsigned char
 	{
@@ -597,6 +635,7 @@ namespace Enums
 			if (sTilt[i] == s)
 				return static_cast<Tilt>(i);
 		}
+		return static_cast<Tilt>(0);
 	}
 	enum class Type : unsigned char
 	{
@@ -627,6 +666,7 @@ namespace Enums
 			if (sType[i] == s)
 				return static_cast<Type>(i);
 		}
+		return static_cast<Type>(0);
 	}
 	enum class VerticalDirection : unsigned char
 	{
@@ -645,6 +685,7 @@ namespace Enums
 			if (sVerticalDirection[i] == s)
 				return static_cast<VerticalDirection>(i);
 		}
+		return static_cast<VerticalDirection>(0);
 	}
 	enum class West : unsigned char
 	{
@@ -665,5 +706,6 @@ namespace Enums
 			if (sWest[i] == s)
 				return static_cast<West>(i);
 		}
+		return static_cast<West>(0);
 	}
 }

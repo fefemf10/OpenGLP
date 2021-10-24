@@ -17,6 +17,7 @@ public:
 	void draw(const Frustum& frustum);
 	void drawTransperent(const Frustum& frustum);
 	void findNeighbors();
+	Section* getSection(int32_t position);
 	glm::ivec2 position{};
 	glm::ivec2 localPosition{};
 	double seed{};

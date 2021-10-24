@@ -8,10 +8,10 @@ int main()
 	}
 	else
 	{
-		//Logger::init();
+		Logger::init();
 		Window window("Game");
 		window.loop();
-		//Logger::deinit();
+		Logger::deinit();
 		glfwTerminate();
 	}
 	return 0;

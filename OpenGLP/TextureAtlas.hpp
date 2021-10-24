@@ -32,8 +32,9 @@ public:
 	TextureAtlas& operator=(const TextureAtlas& other) = delete;
 	TextureAtlas(TextureAtlas&& other) noexcept;
 	TextureAtlas& operator=(TextureAtlas&& other) noexcept;
-	~TextureAtlas();
+	virtual ~TextureAtlas();
 	void loadTexture(const std::string& name, const std::string& path);
+	const GLsizei& at(const std::string& name) const;
 	GLsizei& operator[](const std::string& name);
 	void updateTick();
 private:

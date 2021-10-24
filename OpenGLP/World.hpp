@@ -20,6 +20,8 @@ public:
 	World(const std::string& name, Player& player, Camera& camera);
 	void saveWorld();
 	std::string getBlock(const glm::ivec3& position);
+	Chunk* getChunk(const glm::ivec2& position);
+	Section* getSection(const glm::ivec3& position);
 	void setBlock(const glm::ivec3& position, const std::string& id);
 	void loadChunks();
 	uint64_t getSeed() const;
@@ -34,6 +36,8 @@ public:
 	GLuint countVertexTransperent;
 	uint32_t countVisibleSection;
 private:
+	bool validateLocalPosChunk(const glm::ivec2& position);
+	glm::uvec2 endLocalPosChunk;
 	ThreadPool poolChunks;
 	queuep loadq;
 	queuep drawq;

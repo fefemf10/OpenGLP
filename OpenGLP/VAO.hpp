@@ -15,7 +15,7 @@ public:
 	template <typename T>
 	void loadIndices(const std::vector<T>& data);
 	template <typename T>
-	void loadData(const GLuint& buffer, const std::vector<T>& data);
+	void loadData(const GLuint& buffer, const std::vector<T>& data, GLenum type = GL_FLOAT);
 	void setTypeIndices(GLenum type);
 private:
 	GLuint vao{ 0 }, ibo{ 0 }, indicesCount{ 0 };
@@ -39,7 +39,7 @@ inline void VAO::loadIndices(const std::vector<T>& data)
 }
 
 template<typename T>
-inline void VAO::loadData(const GLuint& buffer, const std::vector<T>& data)
+inline void VAO::loadData(const GLuint& buffer, const std::vector<T>& data, GLenum type)
 {
 	if (data.size() != buffers[buffer].second)
 	{
@@ -53,6 +53,9 @@ inline void VAO::loadData(const GLuint& buffer, const std::vector<T>& data)
 	//glVertexAttribPointer(buffer, sizeof(T) / sizeof(GL_FLOAT), GL_FLOAT, GL_FALSE, sizeof(T), nullptr);
 	glEnableVertexArrayAttrib(vao, buffer);
 	glVertexArrayAttribBinding(vao, buffer, buffer);
-	glVertexArrayAttribFormat(vao, buffer, sizeof(T) / sizeof(GL_FLOAT), GL_FLOAT, GL_FALSE, 0);
+	if (type == GL_UNSIGNED_BYTE || type == GL_UNSIGNED_SHORT || type == GL_UNSIGNED_INT || type == GL_BYTE || type == GL_SHORT || type == GL_INT)
+		glVertexArrayAttribIFormat(vao, buffer, 1, type, 0);
+	else
+		glVertexArrayAttribFormat(vao, buffer, sizeof(T) / sizeof(GL_FLOAT), type, GL_FALSE, 0);
 	glVertexArrayVertexBuffer(vao, buffer, buffers[buffer].first, 0, sizeof(T));
 }

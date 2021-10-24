@@ -42,13 +42,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -221,6 +221,7 @@
     <ClCompile Include="NBTFile.cpp" />
     <ClCompile Include="Noise.cpp" />
     <ClCompile Include="Player.cpp" />
+    <ClCompile Include="CubeHelper.cpp" />
     <ClCompile Include="queuep.cpp" />
     <ClCompile Include="raw.cpp" />
     <ClCompile Include="Rect.cpp" />
@@ -275,7 +276,9 @@
     <ClInclude Include="nbt.hpp" />
     <ClInclude Include="NBTFile.hpp" />
     <ClInclude Include="Noise.hpp" />
+    <ClInclude Include="PaletteItem.hpp" />
     <ClInclude Include="Player.hpp" />
+    <ClInclude Include="CubeHelper.hpp" />
     <ClInclude Include="queuep.hpp" />
     <ClInclude Include="Rect.hpp" />
     <ClInclude Include="Region.hpp" />
