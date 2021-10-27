@@ -361,9 +361,6 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
-/OpenGLP/textures
-/OpenGLP/saves/1189
-/OpenGLP/models
-/OpenGLP/blockstates
-/OpenGLP/json
-/OpenGLP/assets/minecraft
+/OpenGLP/saves
+/OpenGLP/logs
+/OpenGLP/assets
