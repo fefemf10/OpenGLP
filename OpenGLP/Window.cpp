@@ -79,7 +79,7 @@ void Window::loop()
 	Player player;
 	player.setRenderDistance(dist);
 	Camera camera(player);
-	World world("1189", player, camera);
+	World world("21w43a", player, camera);
 
 	shader.setMatrix("projection", 1, GL_FALSE, camera.getProjection());
 

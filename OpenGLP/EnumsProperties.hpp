@@ -287,6 +287,7 @@ namespace Enums
 		case Enums::Direction::NORTH:
 			return glm::ivec3(0, 0, -1);
 		}
+		return glm::ivec3();
 	}
 	enum class Half : unsigned char
 	{

@@ -18,7 +18,7 @@ public:
 	void drawTransperent(const Frustum& frustum);
 	void findNeighbors();
 	Section* getSection(int32_t position);
-	glm::ivec2 position{};
+	glm::ivec3 position{};
 	glm::ivec2 localPosition{};
 	double seed{};
 	std::vector<std::vector<Chunk*>>& chunks;

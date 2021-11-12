@@ -1,6 +1,7 @@
 #include "CubeHelper.hpp"
 #include "World.hpp"
 
+
 CubeHelper::CubeHelper(Section& section, const PaletteItem& pi, const glm::ivec3& position, const glm::ivec3& localPos, const glm::vec2& rotation, const Blocks::Model::Element& item, uint32_t countVertex, const TextureAtlas& atlas, const std::unordered_map<std::string, std::string>& textures) : section(section), pi(pi), position(position), localPos(localPos), countVertex(countVertex), item(item), atlas(atlas), textures(textures)
 {
 	/*auto addQuad = [&](Enums::Direction d, const std::array<std::array<glm::vec3, 4>, 6>& cube, const std::map<Enums::Direction, Blocks::Model::Element::Face>& ifaces,

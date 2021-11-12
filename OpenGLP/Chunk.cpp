@@ -26,7 +26,7 @@ void Chunk::draw(const Frustum& frustum)
 	countVisibleSection = 0;
 	for (size_t i = 0; i < sections.size(); ++i)
 	{
-		const unsigned char f = frustum.CubeInFrustum(glm::vec3(position.x * 16 + 8, sections[i].position.y * 16 + 8, position.y * 16 + 8), 8, 8, 8);
+		const unsigned char f = frustum.CubeInFrustum(glm::vec3(position.x * 16 + 8, sections[i].position.y * 16 + 8, position.z * 16 + 8), 8, 8, 8);
 		if (f == Frustum::FRUSTUM_INTERSECT || f == Frustum::FRUSTUM_INSIDE)
 		{
 			sections[i].draw();

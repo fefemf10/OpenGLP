@@ -218,8 +218,12 @@
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Material.cpp" />
     <ClCompile Include="membuf.cpp" />
+    <ClCompile Include="ModelTemplate.cpp" />
     <ClCompile Include="NBTFile.cpp" />
-    <ClCompile Include="Noise.cpp" />
+    <ClCompile Include="Noise.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="CubeHelper.cpp" />
     <ClCompile Include="queuep.cpp" />
@@ -229,10 +233,15 @@
     <ClCompile Include="RM.cpp" />
     <ClCompile Include="Section.cpp" />
     <ClCompile Include="Shader.cpp" />
-    <ClCompile Include="SSBO.cpp" />
+    <ClCompile Include="SSBO.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="stb_image.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="TextureAtlas.cpp" />
+    <ClCompile Include="TextureMapping.cpp" />
+    <ClCompile Include="TextureSlot.cpp" />
     <ClCompile Include="ThreadPool.cpp" />
     <ClCompile Include="UBO.cpp" />
     <ClCompile Include="VAO.cpp" />
@@ -273,9 +282,13 @@
     <ClInclude Include="Logger.hpp" />
     <ClInclude Include="Material.hpp" />
     <ClInclude Include="membuf.hpp" />
+    <ClInclude Include="ModelTemplate.hpp" />
     <ClInclude Include="nbt.hpp" />
     <ClInclude Include="NBTFile.hpp" />
-    <ClInclude Include="Noise.hpp" />
+    <ClInclude Include="Noise.hpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="PaletteItem.hpp" />
     <ClInclude Include="Player.hpp" />
     <ClInclude Include="CubeHelper.hpp" />
@@ -285,10 +298,15 @@
     <ClInclude Include="RM.hpp" />
     <ClInclude Include="Section.hpp" />
     <ClInclude Include="Shader.hpp" />
-    <ClInclude Include="SSBO.hpp" />
+    <ClInclude Include="SSBO.hpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="stb_image.hpp" />
     <ClInclude Include="Texture.hpp" />
     <ClInclude Include="TextureAtlas.hpp" />
+    <ClInclude Include="TextureMapping.hpp" />
+    <ClInclude Include="TextureSlot.hpp" />
     <ClInclude Include="ThreadPool.hpp" />
     <ClInclude Include="UBO.hpp" />
     <ClInclude Include="VAO.hpp" />

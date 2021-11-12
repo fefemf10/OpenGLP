@@ -224,16 +224,16 @@ void World::update(const float& dt)
 		if ((local.x >= 0 && local.x < a) && (local.y >= 0 && local.y < a))
 		{
 			nbt::NBT chunk = regions[regionPos].chunks[chunkPos.y * 32 + chunkPos.x];
-			nbt::TagCompound& level = chunk.at<nbt::TagCompound>("Level");
-			nbt::TagCompound& heightMaps = level.at<nbt::TagCompound>("Heightmaps");
+			nbt::TagCompound& heightMaps = chunk.at<nbt::TagCompound>("Heightmaps");
 			chunks[local.y][local.x]->motion_blocking = heightMaps.at<nbt::TagLongArray>("MOTION_BLOCKING");
 			chunks[local.y][local.x]->motion_blocking_no_leaves = heightMaps.at<nbt::TagLongArray>("MOTION_BLOCKING_NO_LEAVES");
 			chunks[local.y][local.x]->ocean_floor = heightMaps.at<nbt::TagLongArray>("OCEAN_FLOOR");
 			chunks[local.y][local.x]->world_surface = heightMaps.at<nbt::TagLongArray>("WORLD_SURFACE");
-			chunks[local.y][local.x]->position.x = level.at<nbt::TagInt>("xPos");
-			chunks[local.y][local.x]->position.y = level.at<nbt::TagInt>("zPos");
+			chunks[local.y][local.x]->position.x = chunk.at<nbt::TagInt>("xPos");
+			chunks[local.y][local.x]->position.y = chunk.at<nbt::TagInt>("yPos");
+			chunks[local.y][local.x]->position.z = chunk.at<nbt::TagInt>("zPos");
 			chunks[local.y][local.x]->localPosition = local;
-			std::vector<nbt::TagCompound>& sections = nbt::get_list<nbt::TagCompound>(level.at<nbt::TagList>("Sections"));
+			std::vector<nbt::TagCompound>& sections = nbt::get_list<nbt::TagCompound>(chunk.at<nbt::TagList>("sections"));
 			chunks[local.y][local.x]->sections.resize(sections.size(), Section(*this));
 			for (size_t i = 0; i < sections.size(); ++i)
 			{
