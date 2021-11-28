@@ -108,12 +108,11 @@ CubeHelper::CubeHelper(Section& section, const PaletteItem& pi, const glm::ivec3
 }
 void CubeHelper::addQuad(Enums::Direction d, const glm::vec3& colorBlock)
 {
-	auto a = [](std::string str) { if (!str.starts_with("minecraft:")) return str.insert(0, "minecraft:"); else return str; };
 	PaletteItem pi{ section.getBlock(localPos + Enums::getVecFacing(d)) };
 	if (item.faces.contains(d))
 	{
 		const Blocks::Model::Element::Face& f = item.faces.at(d);
-		const unsigned int texture = atlas.at(a(textures.at(f.texture.substr(1))));
+		const unsigned int texture = atlas.at(textures.at(f.texture.substr(1)));
 		if (f.cullface == d)
 		{
 			const Material& pim = Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(pi.id)].material)];

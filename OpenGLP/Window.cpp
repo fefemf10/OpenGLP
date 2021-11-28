@@ -60,13 +60,14 @@ void Window::loop()
 	RM::loadShader("shader", Shader({ paths::assets / paths::minecraft / paths::shaders / "shader.vert", paths::assets / paths::minecraft / paths::shaders / "shader.frag" }));
 	Shader& shader = RM::getShader("shader");
 	shader.link();
+	Blocks::loadTextures();
 	{
 		ThreadPool pool(2);
 		pool.enqueue([]() { Blocks::loadBlocks(); Blocks::loadBlockMaterials(); });
 		pool.enqueue([]() { Blocks::loadBlockStates(); Blocks::loadModels(); });
 		pool.enqueue(&Biomes::loadBiomes);
 	}
-	Blocks::loadTextures();
+	
 	
 
 

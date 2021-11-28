@@ -230,6 +230,7 @@ namespace Blocks
 	{
 		using nlohmann::json;
 		std::ifstream jsonFile;
+		TextureAtlas& atlas = RM::getAtlas("blocks");
 		for (const auto& t : std::filesystem::directory_iterator(paths::assets / paths::minecraft / paths::models / "block"))
 		{
 			const std::string tmpName = "minecraft:block/" + t.path().stem().string();
@@ -269,7 +270,14 @@ namespace Blocks
 				}
 			}*/
 			if (j.contains("textures"))
+			{
 				models[tmpName].textures = j["textures"].get<std::unordered_map<std::string, std::string>>();
+				for (auto& [key, value] : models[tmpName].textures)
+				{
+					if (!value.starts_with("minecraft:") && !value.starts_with("#"))
+						value.insert(0, "minecraft:");
+				}
+			}
 			if (j.contains("elements"))
 			{
 				for (auto& item : j["elements"])
@@ -319,7 +327,7 @@ namespace Blocks
 							if (value.contains("uv"))
 								face.uv = value["uv"].get<glm::vec4>() * glm::vec4{ 0.0625f, 0.0625f, 0.0625f, 0.0625f };
 							if (value.contains("texture"))
-								face.texture = value["texture"];
+								face.texture = TextureSlot::getTextureSlot(value["texture"]);
 							if (value.contains("cullface"))
 							{
 								 const std::string cullface = value["cullface"];

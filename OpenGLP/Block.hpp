@@ -13,7 +13,7 @@
 #include "jsonglm.hpp"
 #include "Biome.hpp"
 #include "Enums.hpp"
-
+#include "TextureSlot.hpp"
 
 namespace Blocks
 {
@@ -50,10 +50,10 @@ namespace Blocks
 			};
 			struct Face
 			{
-				std::string texture;
 				glm::vec4 uv{ 0.f, 0.f, 1.f, 1.f };
 				int32_t rotation{};
 				std::optional<int> tintindex;
+				TextureSlot texture;
 				Enums::Direction cullface{0};
 			};
 			Rotation rotation;
@@ -69,7 +69,7 @@ namespace Blocks
 		};
 		std::optional<std::string> parent;
 		//std::unordered_map<std::string, Position> display;
-		std::unordered_map<std::string, std::string> textures;
+		std::unordered_map<TextureSlot, GLuint> textures;
 		std::vector<Element> elements;
 		bool ambientocclusion{};
 	};
