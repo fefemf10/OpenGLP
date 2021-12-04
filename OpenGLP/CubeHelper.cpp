@@ -2,7 +2,7 @@
 #include "World.hpp"
 
 
-CubeHelper::CubeHelper(Section& section, const PaletteItem& pi, const glm::ivec3& position, const glm::ivec3& localPos, const glm::vec2& rotation, const Blocks::Model::Element& item, uint32_t countVertex, const TextureAtlas& atlas, const std::unordered_map<std::string, std::string>& textures) : section(section), pi(pi), position(position), localPos(localPos), countVertex(countVertex), item(item), atlas(atlas), textures(textures)
+CubeHelper::CubeHelper(Section& section, const PaletteItem& pi, const glm::ivec3& position, const glm::ivec3& localPos, const glm::vec2& rotation, const Blocks::Model::Element& item, uint32_t countVertex, const TextureAtlas& atlas, const std::map<Enums::TextureSlot, GLuint>& textures) : section(section), pi(pi), position(position), localPos(localPos), countVertex(countVertex), item(item), atlas(atlas), textures(textures)
 {
 	/*auto addQuad = [&](Enums::Direction d, const std::array<std::array<glm::vec3, 4>, 6>& cube, const std::map<Enums::Direction, Blocks::Model::Element::Face>& ifaces,
 		const std::unordered_map<std::string, std::string>& textures, const glm::vec3& colorFloat, float lightFactor,
@@ -112,7 +112,7 @@ void CubeHelper::addQuad(Enums::Direction d, const glm::vec3& colorBlock)
 	if (item.faces.contains(d))
 	{
 		const Blocks::Model::Element::Face& f = item.faces.at(d);
-		const unsigned int texture = atlas.at(textures.at(f.texture.substr(1)));
+		const unsigned int texture = textures.at(f.texture);
 		if (f.cullface == d)
 		{
 			const Material& pim = Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(pi.id)].material)];

@@ -61,14 +61,15 @@ void Window::loop()
 	Shader& shader = RM::getShader("shader");
 	shader.link();
 	Blocks::loadTextures();
-	{
+	/*{
 		ThreadPool pool(2);
 		pool.enqueue([]() { Blocks::loadBlocks(); Blocks::loadBlockMaterials(); });
 		pool.enqueue([]() { Blocks::loadBlockStates(); Blocks::loadModels(); });
 		pool.enqueue(&Biomes::loadBiomes);
-	}
-	
-	
+	}*/
+	Blocks::loadBlocks(); Blocks::loadBlockMaterials();
+	Blocks::loadBlockStates(); Blocks::loadModels();
+	Biomes::loadBiomes();
 
 
 	VAO crosshair;
@@ -80,7 +81,7 @@ void Window::loop()
 	Player player;
 	player.setRenderDistance(dist);
 	Camera camera(player);
-	World world("21w43a", player, camera);
+	World world("118", player, camera);
 
 	shader.setMatrix("projection", 1, GL_FALSE, camera.getProjection());
 

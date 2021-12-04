@@ -240,8 +240,6 @@
     <ClCompile Include="stb_image.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="TextureAtlas.cpp" />
-    <ClCompile Include="TextureMapping.cpp" />
-    <ClCompile Include="TextureSlot.cpp" />
     <ClCompile Include="ThreadPool.cpp" />
     <ClCompile Include="UBO.cpp" />
     <ClCompile Include="VAO.cpp" />
@@ -305,8 +303,6 @@
     <ClInclude Include="stb_image.hpp" />
     <ClInclude Include="Texture.hpp" />
     <ClInclude Include="TextureAtlas.hpp" />
-    <ClInclude Include="TextureMapping.hpp" />
-    <ClInclude Include="TextureSlot.hpp" />
     <ClInclude Include="ThreadPool.hpp" />
     <ClInclude Include="UBO.hpp" />
     <ClInclude Include="VAO.hpp" />

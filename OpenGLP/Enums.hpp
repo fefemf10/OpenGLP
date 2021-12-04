@@ -29,6 +29,99 @@ namespace std
 
 namespace Enums
 {
+	enum class TextureSlot : unsigned char
+	{
+		NONE,
+		ALL,
+		TEXTURE,
+		PARTICLE,
+		END,
+		BOTTOM,
+		TOP,
+		FRONT,
+		BACK,
+		SIDE,
+		NORTH,
+		SOUTH,
+		EAST,
+		WEST,
+		UP,
+		DOWN,
+		CROSS,
+		PLANT,
+		WALL,
+		RAIL,
+		WOOL,
+		PATTERN,
+		PANE,
+		EDGE,
+		FAN,
+		STEM,
+		UPPER_STEM,
+		CROP,
+		DIRT,
+		FIRE,
+		LANTERN,
+		PLATFORM,
+		UNSTICKY,
+		TORCH,
+		LAYER0,
+		LIT_LOG,
+		CANDLE,
+		INSIDE,
+		CONTENT
+	};
+	constexpr const char* sTextureSlot[] =
+	{
+		"none",
+		"all",
+		"texture",
+		"particle",
+		"end",
+		"bottom",
+		"top",
+		"front",
+		"back",
+		"side",
+		"north",
+		"south",
+		"east",
+		"west",
+		"up",
+		"down",
+		"cross",
+		"plant",
+		"wall",
+		"rail",
+		"wool",
+		"pattern",
+		"pane",
+		"edge",
+		"fan",
+		"stem",
+		"upper_stem",
+		"crop",
+		"dirt",
+		"fire",
+		"lantern",
+		"platform",
+		"unsticky",
+		"torch",
+		"layer0",
+		"lit_log",
+		"candle",
+		"inside",
+		"content"
+	};
+	constexpr TextureSlot iTextureSlot(std::string_view s)
+	{
+		for (uint8_t i = 0; i < 39; ++i)
+		{
+			if (sTextureSlot[i] == s)
+				return static_cast<TextureSlot>(i);
+		}
+		return static_cast<TextureSlot>(0);
+	}
 	enum class Material : unsigned char
 	{
 		AIR,

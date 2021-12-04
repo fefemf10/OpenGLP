@@ -14,7 +14,7 @@ struct Section;
 class CubeHelper
 {
 public:
-	CubeHelper(Section& section, const PaletteItem& pi, const glm::ivec3& position, const glm::ivec3& localPos, const glm::vec2& rotation, const Blocks::Model::Element& item, uint32_t countVertex, const TextureAtlas& atlas, const std::unordered_map<std::string, std::string>& textures);
+	CubeHelper(Section& section, const PaletteItem& pi, const glm::ivec3& position, const glm::ivec3& localPos, const glm::vec2& rotation, const Blocks::Model::Element& item, uint32_t countVertex, const TextureAtlas& atlas, const std::map<Enums::TextureSlot, GLuint>& textures);
 	void addQuad(Enums::Direction d, const glm::vec3& colorBlock);
 	void rotateFunc(const glm::vec4& uv, int angle, GLuint texture);
 	void rotateCube(const Enums::Axis& axis, const float& angle, const glm::vec3& origin);
@@ -24,7 +24,7 @@ public:
 private:
 	Section& section;
 	const PaletteItem& pi;
-	const std::unordered_map<std::string, std::string>& textures;
+	const std::map<Enums::TextureSlot, GLuint>& textures;
 	const Blocks::Model::Element& item;
 	const TextureAtlas& atlas;
 	const glm::ivec3& position;

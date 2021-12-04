@@ -83,7 +83,7 @@ namespace Blocks
 		blockStates.resize(898);
 		for (size_t i = 0; i < blockStates.size(); ++i)
 		{
-			jsonFile.open(paths::assets / paths::minecraft / paths::blockstates /  (Enums::sBlock[i] + std::string(".json")));
+			jsonFile.open(paths::assets / paths::minecraft / paths::blockstates / (Enums::sBlock[i] + std::string(".json")));
 			json j;
 			jsonFile >> j;
 			jsonFile.close();
@@ -271,11 +271,21 @@ namespace Blocks
 			}*/
 			if (j.contains("textures"))
 			{
-				models[tmpName].textures = j["textures"].get<std::unordered_map<std::string, std::string>>();
-				for (auto& [key, value] : models[tmpName].textures)
+				for (auto& [key, value] : j["textures"].get<std::unordered_map<std::string, std::string>>())
 				{
-					if (!value.starts_with("minecraft:") && !value.starts_with("#"))
-						value.insert(0, "minecraft:");
+					std::string_view tmpValue(value);
+					if (tmpValue.starts_with('#'))
+					{
+						tmpValue.remove_prefix(1);
+						models[tmpName].textures.insert({ Enums::iTextureSlot(key), static_cast<GLuint>(Enums::iTextureSlot(tmpValue))});
+					}
+					else
+					{
+						if (!value.starts_with("minecraft:"))
+							value.insert(0, "minecraft:");
+						GLuint id = atlas[value];
+						models[tmpName].textures.insert({ Enums::iTextureSlot(key), id + 39u});
+					}
 				}
 			}
 			if (j.contains("elements"))
@@ -327,22 +337,26 @@ namespace Blocks
 							if (value.contains("uv"))
 								face.uv = value["uv"].get<glm::vec4>() * glm::vec4{ 0.0625f, 0.0625f, 0.0625f, 0.0625f };
 							if (value.contains("texture"))
-								face.texture = TextureSlot::getTextureSlot(value["texture"]);
+							{
+								std::string_view tmp(value["texture"]);
+								tmp.remove_prefix(1);
+								face.texture = Enums::iTextureSlot(tmp);
+							}
 							if (value.contains("cullface"))
 							{
-								 const std::string cullface = value["cullface"];
-								 if (cullface.starts_with('e'))
-									 face.cullface = Enums::Direction::EAST;
-								 else if (cullface.starts_with('w'))
-									 face.cullface = Enums::Direction::WEST;
-								 else if (cullface.starts_with('u'))
-									 face.cullface = Enums::Direction::UP;
-								 else if (cullface.starts_with('d'))
-									 face.cullface = Enums::Direction::DOWN;
-								 else if (cullface.starts_with('s'))
-									 face.cullface = Enums::Direction::SOUTH;
-								 else if (cullface.starts_with('n'))
-									 face.cullface = Enums::Direction::NORTH;
+								const std::string cullface = value["cullface"];
+								if (cullface.starts_with('e'))
+									face.cullface = Enums::Direction::EAST;
+								else if (cullface.starts_with('w'))
+									face.cullface = Enums::Direction::WEST;
+								else if (cullface.starts_with('u'))
+									face.cullface = Enums::Direction::UP;
+								else if (cullface.starts_with('d'))
+									face.cullface = Enums::Direction::DOWN;
+								else if (cullface.starts_with('s'))
+									face.cullface = Enums::Direction::SOUTH;
+								else if (cullface.starts_with('n'))
+									face.cullface = Enums::Direction::NORTH;
 							}
 							if (value.contains("rotation"))
 								face.rotation = value["rotation"];
@@ -371,8 +385,10 @@ namespace Blocks
 				models[key].textures.insert(parent.textures.cbegin(), parent.textures.cend());
 				for (auto& [key2, value2] : models[key].textures)
 				{
-					if (value2.starts_with("#"))
-						value2 = models[key].textures[value2.substr(1)];
+					if (value2 < 39)
+						value2 = models[key].textures[static_cast<Enums::TextureSlot>(value2)];
+					else
+						value2 -= 39;
 				}
 				if (parent.parent.has_value())
 					parentKey = a(parent.parent.value());
