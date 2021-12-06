@@ -41,6 +41,8 @@ Window::Window(const std::string& title)
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init("#version 430 core");
 	ImFont* font = ImGui::GetIO().Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\comicbd.ttf", 18, NULL, ImGui::GetIO().Fonts->GetGlyphRangesCyrillic());
+
+	stbi_flip_vertically_on_write(true);
 }
 
 Window::~Window()
@@ -61,15 +63,12 @@ void Window::loop()
 	Shader& shader = RM::getShader("shader");
 	shader.link();
 	Blocks::loadTextures();
-	/*{
+	{
 		ThreadPool pool(2);
 		pool.enqueue([]() { Blocks::loadBlocks(); Blocks::loadBlockMaterials(); });
 		pool.enqueue([]() { Blocks::loadBlockStates(); Blocks::loadModels(); });
 		pool.enqueue(&Biomes::loadBiomes);
-	}*/
-	Blocks::loadBlocks(); Blocks::loadBlockMaterials();
-	Blocks::loadBlockStates(); Blocks::loadModels();
-	Biomes::loadBiomes();
+	}
 
 
 	VAO crosshair;
@@ -130,6 +129,22 @@ void Window::loop()
 
 		if (ImGui::IsKeyReleased(GLFW_KEY_ESCAPE))
 			glfwSetWindowShouldClose(window, true);
+		if (ImGui::IsKeyReleased(GLFW_KEY_F2))
+		{
+			if (GL::settings.fullscreen)
+			{
+				std::vector<uint8_t> pixels(GL::settings.widthf * GL::settings.heightf * 3);
+				glReadPixels(0,0, GL::settings.widthf, GL::settings.heightf, GL_RGB, GL_UNSIGNED_BYTE, pixels.data());
+				stbi_write_png("screenshot.png", GL::settings.widthf, GL::settings.heightf, 3, pixels.data(), 0);
+			}
+			else
+			{
+				std::vector<uint8_t> pixels(GL::settings.width * GL::settings.height * 3);
+				glReadPixels(0, 0, GL::settings.width, GL::settings.height, GL_RGB, GL_UNSIGNED_BYTE, pixels.data());
+				stbi_write_png("screenshot.png", GL::settings.width, GL::settings.height, 3, pixels.data(), 0);
+			}
+			
+		}
 		if (ImGui::IsKeyReleased(GLFW_KEY_F3))
 			menu ^= 1;
 		if (ImGui::IsKeyReleased(GLFW_KEY_1))

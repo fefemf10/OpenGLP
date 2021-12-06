@@ -24,8 +24,8 @@ CubeHelper::CubeHelper(Section& section, const PaletteItem& pi, const glm::ivec3
 	{
 		if (glm::abs(item.rotation.angle) == 45.f)
 		{
-			const float rescale = 1.41421358f;
-			const glm::vec3 origin(0.5f);
+			const glm::vec3 rescale(1.41421358f, 1.f, 1.41421358f);
+			const glm::vec3 origin(0.5f, 0.f, 0.5f);
 			cube[0] -= origin;
 			cube[1] -= origin;
 			cube[2] -= origin;
@@ -53,8 +53,8 @@ CubeHelper::CubeHelper(Section& section, const PaletteItem& pi, const glm::ivec3
 		}
 		else
 		{
-			const float rescale = 1.08239223f;
-			const glm::vec3 origin(0.5f);
+			const glm::vec3 rescale(1.08239223f, 1.f, 1.08239223f);
+			const glm::vec3 origin(0.5f, 0.f, 0.5f);
 			cube[0] -= origin;
 			cube[1] -= origin;
 			cube[2] -= origin;
@@ -106,9 +106,9 @@ CubeHelper::CubeHelper(Section& section, const PaletteItem& pi, const glm::ivec3
 		{ cube[7], cube[6], cube[5], cube[4] }
 	};
 }
-void CubeHelper::addQuad(Enums::Direction d, const glm::vec3& colorBlock)
+void CubeHelper::addQuad(const glm::vec3& colorBlock, const Enums::Direction d)
 {
-	PaletteItem pi{ section.getBlock(localPos + Enums::getVecFacing(d)) };
+	const PaletteItem& pi{ section.getBlock(localPos + Enums::getVecFacing(d)) };
 	if (item.faces.contains(d))
 	{
 		const Blocks::Model::Element::Face& f = item.faces.at(d);
@@ -118,7 +118,7 @@ void CubeHelper::addQuad(Enums::Direction d, const glm::vec3& colorBlock)
 			const Material& pim = Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(pi.id)].material)];
 			if (this->pi.id != pi.id && !pim.solidBlocking)
 			{
-				std::array<std::array<std::array<bool, 3>, 3>, 3> nBlocks
+				const std::array<std::array<std::array<bool, 3>, 3>, 3> nBlocks
 				{
 					std::array<std::array<bool, 3>, 3>
 					{
@@ -258,7 +258,6 @@ void CubeHelper::addQuad(Enums::Direction d, const glm::vec3& colorBlock)
 						AO.push_back(getAO(nBlocks[1][0][0], nBlocks[2][0][1], nBlocks[2][0][0]));
 						break;
 					}
-					
 				}
 				indiciesPush();
 			}

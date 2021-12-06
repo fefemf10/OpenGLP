@@ -277,14 +277,14 @@ namespace Blocks
 					if (tmpValue.starts_with('#'))
 					{
 						tmpValue.remove_prefix(1);
-						models[tmpName].textures.insert({ Enums::iTextureSlot(key), static_cast<GLuint>(Enums::iTextureSlot(tmpValue))});
+						models[tmpName].textures.insert({ Enums::iTextureSlot(key), static_cast<GLuint>(Enums::iTextureSlot(tmpValue)) + 65536u });
 					}
 					else
 					{
 						if (!value.starts_with("minecraft:"))
 							value.insert(0, "minecraft:");
 						GLuint id = atlas[value];
-						models[tmpName].textures.insert({ Enums::iTextureSlot(key), id + 39u});
+						models[tmpName].textures.insert({ Enums::iTextureSlot(key), id });
 					}
 				}
 			}
@@ -370,6 +370,7 @@ namespace Blocks
 			}
 		}
 		auto a = [](std::string str) { if (!str.starts_with("minecraft:")) return str.insert(0, "minecraft:"); else return str; };
+
 		for (auto& [key, value] : models)
 		{
 			if (key == "minecraft:block/block" || key == "minecraft:block/cube" || key == "minecraft:block/cube_all" || key == "minecraft:block/cube_bottom_top" ||
@@ -385,10 +386,8 @@ namespace Blocks
 				models[key].textures.insert(parent.textures.cbegin(), parent.textures.cend());
 				for (auto& [key2, value2] : models[key].textures)
 				{
-					if (value2 < 39)
-						value2 = models[key].textures[static_cast<Enums::TextureSlot>(value2)];
-					else
-						value2 -= 39;
+					if (value2 > 65536)
+						value2 = models[key].textures[static_cast<Enums::TextureSlot>(value2 - 65536)];
 				}
 				if (parent.parent.has_value())
 					parentKey = a(parent.parent.value());

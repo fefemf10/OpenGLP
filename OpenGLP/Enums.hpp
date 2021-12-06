@@ -29,7 +29,7 @@ namespace std
 
 namespace Enums
 {
-	enum class TextureSlot : unsigned char
+	enum class TextureSlot
 	{
 		NONE,
 		ALL,

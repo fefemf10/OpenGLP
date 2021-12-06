@@ -14,48 +14,50 @@ Section::Section(const Section& other) noexcept : world(other.world)
 	vaoTransperent.addVBO(4);
 }
 
+glm::i8vec3 Section::validPos(const glm::i8vec3& pos) noexcept
+{
+	glm::i8vec3 result(pos);
+	if (pos.x < 0)
+		result.x = 15;
+	else if (pos.x > 15)
+		result.x = 0;
+
+	if (pos.y < 0)
+		result.y = 15;
+	else if (pos.y > 15)
+		result.y = 0;
+
+	if (pos.z < 0)
+		result.z = 15;
+	else if (pos.z > 15)
+		result.z = 0;
+
+	return result;
+}
+glm::ivec3 Section::validSectionPos(const glm::i8vec3& pos) noexcept
+{
+	glm::ivec3 result(0);
+	if (pos.x < 0)
+		result.x = -1;
+	else if (pos.x > 15)
+		result.x = 1;
+
+	if (pos.y < 0)
+		result.y = -1;
+	else if (pos.y > 15)
+		result.y = 1;
+
+	if (pos.z < 0)
+		result.z = -1;
+	else if (pos.z > 15)
+		result.z = 1;
+	return result;
+}
+
 const PaletteItem& Section::getBlock(const glm::i8vec3& blockPos)
 {
-	auto validPos = [](const glm::i8vec3& pos) -> glm::i8vec3
-	{
-		glm::i8vec3 result(pos);
-		if (pos.x < 0)
-			result.x = 15;
-		else if (pos.x > 15)
-			result.x = 0;
 
-		if (pos.y < 0)
-			result.y = 15;
-		else if (pos.y > 15)
-			result.y = 0;
-
-		if (pos.z < 0)
-			result.z = 15;
-		else if (pos.z > 15)
-			result.z = 0;
-
-		return result;
-	};
-	auto validSectionPos = [](const glm::i8vec3& pos) -> glm::ivec3
-	{
-		glm::ivec3 result(0);
-		if (pos.x < 0)
-			result.x = -1;
-		else if (pos.x > 15)
-			result.x = 1;
-
-		if (pos.y < 0)
-			result.y = -1;
-		else if (pos.y > 15)
-			result.y = 1;
-
-		if (pos.z < 0)
-			result.z = -1;
-		else if (pos.z > 15)
-			result.z = 1;
-		return result;
-	};
-	glm::i8vec3 sectionPos = validSectionPos(blockPos);
+	const glm::i8vec3& sectionPos = validSectionPos(blockPos);
 	if (sectionPos.x == 0 && sectionPos.y == 0 && sectionPos.z == 0)
 	{
 		if (blockPalette.empty() || dataBlock.empty())
@@ -68,7 +70,7 @@ const PaletteItem& Section::getBlock(const glm::i8vec3& blockPos)
 	}
 	else
 	{
-		Section* sec = world.getSection(this->position + glm::ivec3(sectionPos));
+		Section* const sec = world.getSection(this->position + glm::ivec3(sectionPos));
 		if (sec)
 			return sec->getBlock(validPos(blockPos));
 		else
@@ -180,24 +182,24 @@ void Section::genMesh()
 							}
 							if (!opacity(pitem.id))
 							{
-								CubeHelper cube(*this, pitem, positionBlock, {x, y, z}, glm::vec2(variant.x, variant.y), item, countVertex, atlas, modelBlock.textures);
-								cube.addQuad(Enums::Direction::EAST, colorFloat);
-								cube.addQuad(Enums::Direction::WEST, colorFloat);
-								cube.addQuad(Enums::Direction::UP, colorFloat);
-								cube.addQuad(Enums::Direction::DOWN, colorFloat);
-								cube.addQuad(Enums::Direction::SOUTH, colorFloat);
-								cube.addQuad(Enums::Direction::NORTH, colorFloat);
+								CubeHelper cube(*this, pitem, positionBlock, { x, y, z }, glm::vec2(variant.x, variant.y), item, countVertex, atlas, modelBlock.textures);
+								cube.addQuad(colorFloat, Enums::Direction::EAST);
+								cube.addQuad(colorFloat, Enums::Direction::WEST);
+								cube.addQuad(colorFloat, Enums::Direction::UP);
+								cube.addQuad(colorFloat, Enums::Direction::DOWN);
+								cube.addQuad(colorFloat, Enums::Direction::SOUTH);
+								cube.addQuad(colorFloat, Enums::Direction::NORTH);
 								cube.add(vertex, UV, color, AO, indicies, countVertex);
 							}
 							else
 							{
 								CubeHelper cube(*this, pitem, positionBlock, { x, y, z }, glm::vec2(variant.x, variant.y), item, countVertexTransperent, atlas, modelBlock.textures);
-								cube.addQuad(Enums::Direction::EAST, colorFloat);
-								cube.addQuad(Enums::Direction::WEST, colorFloat);
-								cube.addQuad(Enums::Direction::UP, colorFloat);
-								cube.addQuad(Enums::Direction::DOWN, colorFloat);
-								cube.addQuad(Enums::Direction::SOUTH, colorFloat);
-								cube.addQuad(Enums::Direction::NORTH, colorFloat);
+								cube.addQuad(colorFloat, Enums::Direction::EAST);
+								cube.addQuad(colorFloat, Enums::Direction::WEST);
+								cube.addQuad(colorFloat, Enums::Direction::UP);
+								cube.addQuad(colorFloat, Enums::Direction::DOWN);
+								cube.addQuad(colorFloat, Enums::Direction::SOUTH);
+								cube.addQuad(colorFloat, Enums::Direction::NORTH);
 								cube.add(vertext, UVt, colort, AOt, indiciest, countVertexTransperent);
 							}
 						}
