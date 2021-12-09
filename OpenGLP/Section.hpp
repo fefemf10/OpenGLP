@@ -24,8 +24,8 @@ struct Section
 		}
 		return tmp;
 	}
-	static glm::i8vec3 validPos(const glm::i8vec3& pos) noexcept;
-	static glm::ivec3 validSectionPos(const glm::i8vec3& pos) noexcept;
+	static const glm::i8vec3& validPos(const glm::i8vec3& pos) noexcept;
+	static const glm::ivec3& validSectionPos(const glm::i8vec3& pos) noexcept;
 	std::vector<int8_t> blockLight;
 	std::vector<int8_t> skyLight;
 	std::vector<int64_t> dataBlock;

@@ -14,44 +14,13 @@ Section::Section(const Section& other) noexcept : world(other.world)
 	vaoTransperent.addVBO(4);
 }
 
-glm::i8vec3 Section::validPos(const glm::i8vec3& pos) noexcept
+const glm::i8vec3& Section::validPos(const glm::i8vec3& pos) noexcept
 {
-	glm::i8vec3 result(pos);
-	if (pos.x < 0)
-		result.x = 15;
-	else if (pos.x > 15)
-		result.x = 0;
-
-	if (pos.y < 0)
-		result.y = 15;
-	else if (pos.y > 15)
-		result.y = 0;
-
-	if (pos.z < 0)
-		result.z = 15;
-	else if (pos.z > 15)
-		result.z = 0;
-
-	return result;
+	return glm::i8vec3((pos.x < 0) * 15 + (pos.x >=0 && pos.x <=15) * pos.x, (pos.y < 0) * 15 + (pos.y >= 0 && pos.y <= 15) * pos.y, (pos.z < 0) * 15 + (pos.z >= 0 && pos.z <= 15) * pos.z);
 }
-glm::ivec3 Section::validSectionPos(const glm::i8vec3& pos) noexcept
+const glm::ivec3& Section::validSectionPos(const glm::i8vec3& pos) noexcept
 {
-	glm::ivec3 result(0);
-	if (pos.x < 0)
-		result.x = -1;
-	else if (pos.x > 15)
-		result.x = 1;
-
-	if (pos.y < 0)
-		result.y = -1;
-	else if (pos.y > 15)
-		result.y = 1;
-
-	if (pos.z < 0)
-		result.z = -1;
-	else if (pos.z > 15)
-		result.z = 1;
-	return result;
+	return glm::ivec3(-(pos.x < 0) + (pos.x > 15), -(pos.y < 0) + (pos.y > 15), -(pos.z < 0) + (pos.z > 15));
 }
 
 const PaletteItem& Section::getBlock(const glm::i8vec3& blockPos)
