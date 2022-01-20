@@ -95,62 +95,15 @@ int Frustum::CubeInFrustum(const glm::vec3& center, float x, float y, float z) c
         int out = 0;
         int in = 0;
 
-        if (getDistance(planes[i], center + glm::vec3(-x, -y, -z)) < 0) {
-            out++;
-        }
-        else {
-            in++;
-        }
-
-        if (getDistance(planes[i], center + glm::vec3(x, -y, -z)) < 0) {
-            out++;
-        }
-        else {
-            in++;
-        }
-
-        if (getDistance(planes[i], center + glm::vec3(-x, -y, z)) < 0) {
-            out++;
-        }
-        else {
-            in++;
-        }
-
-        if (getDistance(planes[i], center + glm::vec3(x, -y, z)) < 0) {
-            out++;
-        }
-        else {
-            in++;
-        }
-
-        if (getDistance(planes[i], center + glm::vec3(-x, y, -z)) < 0) {
-            out++;
-        }
-        else {
-            in++;
-        }
-
-        if (getDistance(planes[i], center + glm::vec3(x, y, -z)) < 0) {
-            out++;
-        }
-        else {
-            in++;
-        }
-
-        if (getDistance(planes[i], center + glm::vec3(-x, y, z)) < 0) {
-            out++;
-        }
-        else {
-            in++;
-        }
-
-        if (getDistance(planes[i], center + glm::vec3(x, y, z)) < 0) {
-            out++;
-        }
-        else {
-            in++;
-        }
-
+        out += getDistance(planes[i], center + glm::vec3(-x, -y, -z)) < 0;
+        out += getDistance(planes[i], center + glm::vec3(x, -y, -z)) < 0;
+        out += getDistance(planes[i], center + glm::vec3(-x, -y, z)) < 0;
+        out += getDistance(planes[i], center + glm::vec3(x, -y, z)) < 0;
+        out += getDistance(planes[i], center + glm::vec3(-x, y, -z)) < 0;
+        out += getDistance(planes[i], center + glm::vec3(x, y, -z)) < 0;
+        out += getDistance(planes[i], center + glm::vec3(-x, y, z)) < 0;
+        out += getDistance(planes[i], center + glm::vec3(x, y, z)) < 0;
+        in = 8 - out;
         // If all corners are out
         if (!in) {
             return FRUSTUM_OUTSIDE;
