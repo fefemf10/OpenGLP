@@ -1,5 +1,5 @@
 #include "Block.hpp"
-
+#include <string>
 std::vector<Blocks::Block> Blocks::blocks;
 std::vector<Material> Blocks::blockMaterials;
 std::vector<Blocks::BlockStates> Blocks::blockStates;
@@ -103,17 +103,15 @@ namespace Blocks
 					}
 					auto split = [](const std::string& s, const std::string& delimiter) -> std::vector<std::string>
 					{
-						size_t pos_start = 0, pos_end, delim_len = delimiter.length();
-						std::string token;
-						std::vector<std::string> res;
-						while ((pos_end = s.find(delimiter, pos_start)) != std::string::npos)
+						std::vector<std::string> out;
+						char* next_token{};
+						char* token = strtok_s(const_cast<char*>(s.c_str()), delimiter.data(), &next_token);
+						while (token != nullptr)
 						{
-							token = s.substr(pos_start, pos_end - pos_start);
-							pos_start = pos_end + delim_len;
-							res.push_back(token);
+							out.push_back(std::string(token));
+							token = strtok_s(nullptr, delimiter.data(), &next_token);
 						}
-						res.push_back(s.substr(pos_start));
-						return res;
+						return out;
 					};
 
 					std::map<Enums::PropertiesBlock, uint8_t> p;
@@ -126,91 +124,111 @@ namespace Blocks
 							const std::vector<std::string>& twos = split(ones[i], "=");
 							properties.insert({ twos[0], twos[1] });
 						}
-						for (const auto& [key, value] : properties)
+						for (const auto& [key, nameProp] : properties)
 						{
 							const Enums::PropertiesBlock propBlock = Enums::iPropertiesBlock(key);
+							uint8_t value{};
 							if (static_cast<size_t>(propBlock) > 20)
 							{
-								if (value == "true")
-									p.insert({ propBlock, 1 });
-								else if (value == "false")
-									p.insert({ propBlock, 0 });
+								if (nameProp == "true")
+									value = 1;
+								else if (nameProp == "false")
+									value = 0;
 								else
-									p.insert({ propBlock, std::stoi(value) });
+									value = std::stoi(nameProp);
 							}
 							else
 							{
-								if (propBlock == Enums::PropertiesBlock::ATTACHMENT)
-									p.insert({ propBlock, static_cast<uint8_t>(Enums::iAttachment(value)) });
-								else if (propBlock == Enums::PropertiesBlock::AXIS)
-									p.insert({ propBlock, static_cast<uint8_t>(Enums::iAxis(value)) });
-								else if (propBlock == Enums::PropertiesBlock::EAST)
+								switch (propBlock)
 								{
-									if (value == "true")
-										p.insert({ propBlock, 1 });
-									else if (value == "false")
-										p.insert({ propBlock, 0 });
+								case Enums::PropertiesBlock::ATTACHMENT:
+									value = static_cast<uint8_t>(Enums::iAttachment(nameProp));
+									break;
+								case Enums::PropertiesBlock::AXIS:
+									value = static_cast<uint8_t>(Enums::iAxis(nameProp));
+									break;
+								case Enums::PropertiesBlock::EAST:
+									if (nameProp == "true")
+										value = 1;
+									else if (nameProp == "false")
+										value = 0;
 									else
-										p.insert({ propBlock, static_cast<uint8_t>(Enums::iEast(value)) });
-								}
-								else if (propBlock == Enums::PropertiesBlock::FACE)
-									p.insert({ propBlock, static_cast<uint8_t>(Enums::iFace(value)) });
-								else if (propBlock == Enums::PropertiesBlock::FACING)
-									p.insert({ propBlock, static_cast<uint8_t>(Enums::iFacing(value)) });
-								else if (propBlock == Enums::PropertiesBlock::HALF)
-									p.insert({ propBlock, static_cast<uint8_t>(Enums::iHalf(value)) });
-								else if (propBlock == Enums::PropertiesBlock::HINGE)
-									p.insert({ propBlock, static_cast<uint8_t>(Enums::iHinge(value)) });
-								else if (propBlock == Enums::PropertiesBlock::INSTRUMENT)
-									p.insert({ propBlock, static_cast<uint8_t>(Enums::iInstrument(value)) });
-								else if (propBlock == Enums::PropertiesBlock::LEAVES)
-									p.insert({ propBlock,static_cast<uint8_t>(Enums::iLeaves(value)) });
-								else if (propBlock == Enums::PropertiesBlock::NORTH)
-								{
-									if (value == "true")
-										p.insert({ propBlock, 1 });
-									else if (value == "false")
-										p.insert({ propBlock, 0 });
+										value = static_cast<uint8_t>(Enums::iEast(nameProp));
+									break;
+								case Enums::PropertiesBlock::FACE:
+									value = static_cast<uint8_t>(Enums::iFace(nameProp));
+									break;
+								case Enums::PropertiesBlock::FACING:
+									value = static_cast<uint8_t>(Enums::iFacing(nameProp));
+									break;
+								case Enums::PropertiesBlock::HALF:
+									value = static_cast<uint8_t>(Enums::iHalf(nameProp));
+									break;
+								case Enums::PropertiesBlock::HINGE:
+									value = static_cast<uint8_t>(Enums::iHinge(nameProp));
+									break;
+								case Enums::PropertiesBlock::INSTRUMENT:
+									value = static_cast<uint8_t>(Enums::iInstrument(nameProp));
+									break;
+								case Enums::PropertiesBlock::LEAVES:
+									value = static_cast<uint8_t>(Enums::iLeaves(nameProp));
+									break;
+								case Enums::PropertiesBlock::NORTH:
+									if (nameProp == "true")
+										value = 1;
+									else if (nameProp == "false")
+										value = 0;
 									else
-										p.insert({ propBlock, static_cast<uint8_t>(Enums::iNorth(value)) });
-								}
-								else if (propBlock == Enums::PropertiesBlock::MODE)
-									p.insert({ propBlock, static_cast<uint8_t>(Enums::iMode(value)) });
-								else if (propBlock == Enums::PropertiesBlock::ORIENTATION)
-									p.insert({ propBlock, static_cast<uint8_t>(Enums::iOrientation(value)) });
-								else if (propBlock == Enums::PropertiesBlock::PART)
-									p.insert({ propBlock, static_cast<uint8_t>(Enums::iPart(value)) });
-								else if (propBlock == Enums::PropertiesBlock::SCULK_SENSOR_PHASE)
-									p.insert({ propBlock, static_cast<uint8_t>(Enums::iSculkSensorPhase(value)) });
-								else if (propBlock == Enums::PropertiesBlock::SHAPE)
-									p.insert({ propBlock,static_cast<uint8_t>(Enums::iShape(value)) });
-								else if (propBlock == Enums::PropertiesBlock::SOUTH)
-								{
-									if (value == "true")
-										p.insert({ propBlock, 1 });
-									else if (value == "false")
-										p.insert({ propBlock, 0 });
+										value = static_cast<uint8_t>(Enums::iNorth(nameProp));
+									break;
+								case Enums::PropertiesBlock::MODE:
+									value = static_cast<uint8_t>(Enums::iMode(nameProp));
+									break;
+								case Enums::PropertiesBlock::ORIENTATION:
+									value = static_cast<uint8_t>(Enums::iOrientation(nameProp));
+									break;
+								case Enums::PropertiesBlock::PART:
+									value = static_cast<uint8_t>(Enums::iPart(nameProp));
+									break;
+								case Enums::PropertiesBlock::SCULK_SENSOR_PHASE:
+									value = static_cast<uint8_t>(Enums::iSculkSensorPhase(nameProp));
+									break;
+								case Enums::PropertiesBlock::SHAPE:
+									value = static_cast<uint8_t>(Enums::iShape(nameProp));
+									break;
+								case Enums::PropertiesBlock::SOUTH:
+									if (nameProp == "true")
+										value = 1;
+									else if (nameProp == "false")
+										value = 0;
 									else
-										p.insert({ propBlock, static_cast<uint8_t>(Enums::iSouth(value)) });
-								}
-								else if (propBlock == Enums::PropertiesBlock::TYPE)
-									p.insert({ propBlock, static_cast<uint8_t>(Enums::iType(value)) });
-								else if (propBlock == Enums::PropertiesBlock::THICKNESS)
-									p.insert({ propBlock, static_cast<uint8_t>(Enums::iThickness(value)) });
-								else if (propBlock == Enums::PropertiesBlock::TILT)
-									p.insert({ propBlock, static_cast<uint8_t>(Enums::iTilt(value)) });
-								else if (propBlock == Enums::PropertiesBlock::VERTICAL_DIRECTION)
-									p.insert({ propBlock, static_cast<uint8_t>(Enums::iVerticalDirection(value)) });
-								else if (propBlock == Enums::PropertiesBlock::WEST)
-								{
-									if (value == "true")
-										p.insert({ propBlock, 1 });
-									else if (value == "false")
-										p.insert({ propBlock, 0 });
+										value = static_cast<uint8_t>(Enums::iSouth(nameProp));
+									break;
+								case Enums::PropertiesBlock::THICKNESS:
+									value = static_cast<uint8_t>(Enums::iThickness(nameProp));
+									break;
+								case Enums::PropertiesBlock::TILT:
+									value = static_cast<uint8_t>(Enums::iTilt(nameProp));
+									break;
+								case Enums::PropertiesBlock::TYPE:
+									value = static_cast<uint8_t>(Enums::iType(nameProp));
+									break;
+								case Enums::PropertiesBlock::VERTICAL_DIRECTION:
+									value = static_cast<uint8_t>(Enums::iVerticalDirection(nameProp));
+									break;
+								case Enums::PropertiesBlock::WEST:
+									if (nameProp == "true")
+										value = 1;
+									else if (nameProp == "false")
+										value = 0;
 									else
-										p.insert({ propBlock, static_cast<uint8_t>(Enums::iWest(value)) });
+										value = static_cast<uint8_t>(Enums::iWest(nameProp));
+									break;
+								default:
+									break;
 								}
 							}
+							p.insert({ propBlock, value });
 						}
 					}
 					blockStates[i].variants.insert({ p, v });

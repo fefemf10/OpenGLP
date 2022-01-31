@@ -206,7 +206,12 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="Framebuffer.cpp" />
+    <ClCompile Include="Framebuffer.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Frustum.cpp" />
     <ClCompile Include="GL.cpp" />
     <ClCompile Include="gzipcomplete.cpp" />
@@ -218,7 +223,6 @@
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Material.cpp" />
     <ClCompile Include="membuf.cpp" />
-    <ClCompile Include="ModelTemplate.cpp" />
     <ClCompile Include="NBTFile.cpp" />
     <ClCompile Include="Noise.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
@@ -228,10 +232,16 @@
     <ClCompile Include="CubeHelper.cpp" />
     <ClCompile Include="queuep.cpp" />
     <ClCompile Include="raw.cpp" />
-    <ClCompile Include="Rect.cpp" />
+    <ClCompile Include="Rect.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Region.cpp" />
     <ClCompile Include="RM.cpp" />
     <ClCompile Include="Section.cpp" />
+    <ClCompile Include="SectionMesh.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="SSBO.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
@@ -270,7 +280,12 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="Framebuffer.hpp" />
+    <ClInclude Include="Framebuffer.hpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="Frustum.hpp" />
     <ClInclude Include="GL.hpp" />
     <ClInclude Include="Hitbox.hpp">
@@ -281,7 +296,6 @@
     <ClInclude Include="Logger.hpp" />
     <ClInclude Include="Material.hpp" />
     <ClInclude Include="membuf.hpp" />
-    <ClInclude Include="ModelTemplate.hpp" />
     <ClInclude Include="nbt.hpp" />
     <ClInclude Include="NBTFile.hpp" />
     <ClInclude Include="Noise.hpp">
@@ -292,10 +306,16 @@
     <ClInclude Include="Player.hpp" />
     <ClInclude Include="CubeHelper.hpp" />
     <ClInclude Include="queuep.hpp" />
-    <ClInclude Include="Rect.hpp" />
+    <ClInclude Include="Rect.hpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="Region.hpp" />
     <ClInclude Include="RM.hpp" />
     <ClInclude Include="Section.hpp" />
+    <ClInclude Include="SectionMesh.hpp" />
     <ClInclude Include="Shader.hpp" />
     <ClInclude Include="SSBO.hpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>

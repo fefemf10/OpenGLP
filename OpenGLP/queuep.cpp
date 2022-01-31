@@ -61,6 +61,12 @@ void queuep::remove(glm::ivec2 pos)
 	set.erase(pos);
 }
 
+void queuep::clear()
+{
+	set.clear();
+	items.clear();
+}
+
 void queuep::update(glm::ivec2 pos, bool less)
 {
 	if (pos != playerPos)

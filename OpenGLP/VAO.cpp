@@ -5,6 +5,14 @@ VAO::VAO()
 	glCreateVertexArrays(1, &vao);
 }
 
+VAO::VAO(const VAO& other)
+{
+	glCreateVertexArrays(1, &vao);
+	addVBO(other.buffers.size());
+	copyAllVBO(other);
+	indicesCount = other.indicesCount;
+}
+
 VAO::VAO(VAO&& other) noexcept
 {
 	for (size_t i = 0; i < buffers.size(); ++i)
@@ -52,4 +60,24 @@ void VAO::addVBO(GLuint count)
 void VAO::setTypeIndices(GLenum type)
 {
 	typeIndices = type;
+}
+
+void VAO::clear()
+{
+	for (size_t i = 0; i < buffers.size(); i++)
+	{
+		glDeleteBuffers(1, &buffers[i].first);
+		buffers[i].second = 0u;
+	}
+	indicesCount = 0;
+}
+
+void VAO::copyAllVBO(const VAO& other)
+{
+	for (size_t i = 0; i < other.buffers.size(); i++)
+	{
+		glCreateBuffers(1, &buffers[i].first);
+		glCopyNamedBufferSubData(other.buffers[i].first, buffers[i].first, 0, 0, other.buffers[i].second);
+		buffers[i].second = other.buffers[i].second;
+	}
 }

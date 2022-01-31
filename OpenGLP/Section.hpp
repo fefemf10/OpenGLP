@@ -1,9 +1,8 @@
 #pragma once
 #include <vector>
-#include <array>
+#include <atomic>
 #include <GLM/glm.hpp>
-#include "Block.hpp"
-#include "VAO.hpp"
+
 #include "CubeHelper.hpp"
 class World;
 
@@ -12,18 +11,6 @@ struct Section
 	static PaletteItem stone;
 	Section(World& world);
 	Section(const Section& other) noexcept;
-	template<typename T>
-	inline T swapEndian(T value)
-	{
-		T tmp;
-		for (size_t i = 0; i < sizeof(T); ++i)
-		{
-			char tmpc = reinterpret_cast<char*>(&tmp)[sizeof(T) - i - 1];
-			reinterpret_cast<char*>(&tmp)[sizeof(T) - i - 1] = reinterpret_cast<char*>(&value)[i];
-			reinterpret_cast<char*>(&value)[i] = tmpc;
-		}
-		return tmp;
-	}
 	static const glm::i8vec3& validPos(const glm::i8vec3& pos) noexcept;
 	static const glm::ivec3& validSectionPos(const glm::i8vec3& pos) noexcept;
 	std::vector<int8_t> blockLight;
@@ -49,15 +36,12 @@ struct Section
 	void gen(uint64_t seed, const glm::vec2& chunkPos);
 	GLuint countVertex{};
 	GLuint countVertexTransperent{};
-	bool modified{};
-	bool buffer{};
-	bool buffert{};
-	bool visible{};
-	bool visiblet{};
+	std::atomic<bool> modified{};
+	std::atomic<bool> work{};
+	std::atomic<bool> buffer{};
+	std::atomic<bool> buffert{};
 	void genMesh();
 	void loadBuffer();
-	void draw();
-	void drawTransperent();
 	std::vector<glm::vec3> vertex;
 	std::vector<glm::vec3> color;
 	std::vector<glm::vec3> UV;
@@ -68,6 +52,4 @@ struct Section
 	std::vector<glm::vec3> UVt;
 	std::vector<uint8_t> AOt;
 	std::vector<GLuint> indiciest;
-	VAO vao;
-	VAO vaoTransperent;
 };

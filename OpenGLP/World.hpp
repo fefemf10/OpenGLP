@@ -2,6 +2,7 @@
 #include <filesystem>
 #include <fstream>
 #include <random>
+#include <vector>
 #include <thread>
 #include <GLM/glm.hpp>
 #include <GLEW/glew.h>
@@ -14,6 +15,7 @@
 #include "Region.hpp"
 #include "NBTFile.hpp"
 #include "nbt.hpp"
+#include "SectionMesh.hpp"
 class World
 {
 public:
@@ -42,6 +44,7 @@ private:
 	queuep loadq;
 	queuep drawq;
 	std::vector<std::vector<Chunk*>> chunks;
+	std::vector<std::vector<std::vector<SectionMesh>>> sectionMesh;
 	Player& player;
 	Camera& camera;
 	glm::ivec2 playerLastPosition;

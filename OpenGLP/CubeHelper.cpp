@@ -2,7 +2,7 @@
 #include "World.hpp"
 
 
-CubeHelper::CubeHelper(Section& section, const PaletteItem& pi, const glm::ivec3& position, const glm::ivec3& localPos, const glm::vec2& rotation, const Blocks::Model::Element& item, uint32_t countVertex, const TextureAtlas& atlas, const std::map<Enums::TextureSlot, GLuint>& textures) : section(section), pi(pi), position(position), localPos(localPos), countVertex(countVertex), item(item), atlas(atlas), textures(textures)
+CubeHelper::CubeHelper(Section& section, const PaletteItem& pi, const glm::ivec3& position, const glm::vec3& colorBlock, const glm::ivec3& localPos, const glm::vec2& rotation, const Blocks::Model::Element& item, uint32_t countVertex, const TextureAtlas& atlas, const std::map<Enums::TextureSlot, GLuint>& textures) : section(section), pi(pi), position(position), colorBlock(colorBlock), localPos(localPos), countVertex(countVertex), item(item), atlas(atlas), textures(textures)
 {
 	/*auto addQuad = [&](Enums::Direction d, const std::array<std::array<glm::vec3, 4>, 6>& cube, const std::map<Enums::Direction, Blocks::Model::Element::Face>& ifaces,
 		const std::unordered_map<std::string, std::string>& textures, const glm::vec3& colorFloat, float lightFactor,
@@ -105,8 +105,66 @@ CubeHelper::CubeHelper(Section& section, const PaletteItem& pi, const glm::ivec3
 		{ cube[0], cube[1], cube[2], cube[3] },
 		{ cube[7], cube[6], cube[5], cube[4] }
 	};
+	nBlocks = 
+	{
+		std::array<std::array<bool, 3>, 3>
+		{
+			std::array<bool, 3>
+			{
+				Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(-1, -1, -1)).id)].material)].solid,
+					Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(0, -1, -1)).id)].material)].solid,
+					Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(1, -1, -1)).id)].material)].solid
+			},
+			{
+				Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(-1, -1, 0)).id)].material)].solid,
+				Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(0, -1, 0)).id)].material)].solid,
+				Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(1, -1, 0)).id)].material)].solid
+			},
+			{
+				Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(-1, -1, 1)).id)].material)].solid,
+				Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(0, -1, 1)).id)].material)].solid,
+				Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(1, -1, 1)).id)].material)].solid
+			}
+		},
+		{
+			std::array<bool, 3>
+			{
+				Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(-1, 0, -1)).id)].material)].solid,
+				Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(0, 0, -1)).id)].material)].solid,
+				Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(1, 0, -1)).id)].material)].solid
+			},
+			{
+				Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(-1, 0, 0)).id)].material)].solid,
+				Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(0, 0, 0)).id)].material)].solid,
+				Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(1, 0, 0)).id)].material)].solid
+			},
+			{
+				Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(-1, 0, 1)).id)].material)].solid,
+				Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(0, 0, 1)).id)].material)].solid,
+				Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(1, 0, 1)).id)].material)].solid
+			}
+		},
+		{
+			std::array<bool, 3>
+			{
+				Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(-1, 1, -1)).id)].material)].solid,
+				Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(0, 1, -1)).id)].material)].solid,
+				Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(1, 1, -1)).id)].material)].solid
+			},
+			{
+				Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(-1, 1, 0)).id)].material)].solid,
+				Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(0, 1, 0)).id)].material)].solid,
+				Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(1, 1, 0)).id)].material)].solid
+			},
+			{
+				Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(-1, 1, 1)).id)].material)].solid,
+				Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(0, 1, 1)).id)].material)].solid,
+				Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(1, 1, 1)).id)].material)].solid
+			}
+		}
+	};
 }
-void CubeHelper::addQuad(const glm::vec3& colorBlock, const Enums::Direction d)
+void CubeHelper::addQuad(const Enums::Direction d)
 {
 	const PaletteItem& pi{ section.getBlock(localPos + Enums::getVecFacing(d)) };
 	if (item.faces.contains(d))
@@ -118,64 +176,6 @@ void CubeHelper::addQuad(const glm::vec3& colorBlock, const Enums::Direction d)
 			const Material& pim = Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(pi.id)].material)];
 			if (this->pi.id != pi.id && !pim.solidBlocking)
 			{
-				const std::array<std::array<std::array<bool, 3>, 3>, 3> nBlocks
-				{
-					std::array<std::array<bool, 3>, 3>
-					{
-						std::array<bool, 3>
-						{
-							Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(-1, -1, -1)).id)].material)].solid,
-							Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(0, -1, -1)).id)].material)].solid,
-							Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(1, -1, -1)).id)].material)].solid
-						},
-						{
-							Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(-1, -1, 0)).id)].material)].solid,
-							Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(0, -1, 0)).id)].material)].solid,
-							Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(1, -1, 0)).id)].material)].solid
-						},
-						{
-							Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(-1, -1, 1)).id)].material)].solid,
-							Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(0, -1, 1)).id)].material)].solid,
-							Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(1, -1, 1)).id)].material)].solid
-						}
-					},
-					{
-						std::array<bool, 3>
-						{
-							Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(-1, 0, -1)).id)].material)].solid,
-							Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(0, 0, -1)).id)].material)].solid,
-							Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(1, 0, -1)).id)].material)].solid
-						},
-						{
-							Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(-1, 0, 0)).id)].material)].solid,
-							Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(0, 0, 0)).id)].material)].solid,
-							Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(1, 0, 0)).id)].material)].solid
-						},
-						{
-							Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(-1, 0, 1)).id)].material)].solid,
-							Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(0, 0, 1)).id)].material)].solid,
-							Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(1, 0, 1)).id)].material)].solid
-						}
-					},
-					{
-						std::array<bool, 3>
-						{
-							Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(-1, 1, -1)).id)].material)].solid,
-							Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(0, 1, -1)).id)].material)].solid,
-							Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(1, 1, -1)).id)].material)].solid
-						},
-						{
-							Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(-1, 1, 0)).id)].material)].solid,
-							Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(0, 1, 0)).id)].material)].solid,
-							Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(1, 1, 0)).id)].material)].solid
-						},
-						{
-							Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(-1, 1, 1)).id)].material)].solid,
-							Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(0, 1, 1)).id)].material)].solid,
-							Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(1, 1, 1)).id)].material)].solid
-						}
-					}
-				};
 				vertexPush(cubefaces[static_cast<size_t>(std::log2f(static_cast<float>(d)))]);
 				if (f.tintindex)
 				{

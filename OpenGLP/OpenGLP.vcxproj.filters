@@ -153,10 +153,10 @@
     <ClCompile Include="CubeHelper.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="ModelTemplate.cpp">
+    <ClCompile Include="stb_image_write.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="stb_image_write.cpp">
+    <ClCompile Include="SectionMesh.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
   </ItemGroup>
@@ -296,10 +296,10 @@
     <ClInclude Include="PaletteItem.hpp">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="ModelTemplate.hpp">
+    <ClInclude Include="stb_image_write.hpp">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="stb_image_write.hpp">
+    <ClInclude Include="SectionMesh.hpp">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>

@@ -13,6 +13,7 @@ public:
 	glm::ivec2 peek();
 	glm::ivec2 dequeue();
 	void remove(glm::ivec2 pos);
+	void clear();
 	void update(glm::ivec2 pos, bool less = true);
 private:
 	struct item

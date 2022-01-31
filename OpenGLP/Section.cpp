@@ -4,14 +4,10 @@ PaletteItem Section::stone{ .id = Enums::Block::STONE };
 
 Section::Section(World& world) : world(world)
 {
-	vao.addVBO(4);
-	vaoTransperent.addVBO(4);
 }
 
 Section::Section(const Section& other) noexcept : world(other.world)
 {
-	vao.addVBO(4);
-	vaoTransperent.addVBO(4);
 }
 
 const glm::i8vec3& Section::validPos(const glm::i8vec3& pos) noexcept
@@ -25,26 +21,26 @@ const glm::ivec3& Section::validSectionPos(const glm::i8vec3& pos) noexcept
 
 const PaletteItem& Section::getBlock(const glm::i8vec3& blockPos)
 {
-
-	const glm::i8vec3& sectionPos = validSectionPos(blockPos);
-	if (sectionPos.x == 0 && sectionPos.y == 0 && sectionPos.z == 0)
-	{
-		if (blockPalette.empty() || dataBlock.empty())
-			return Section::stone;
-		const int32_t index = (((blockPos.y << 4u) + blockPos.z) << 4u) + blockPos.x;
-		const uint16_t startLong = index / countIndexPerLongBlock;
-		const uint8_t startBit = (index % countIndexPerLongBlock) * bitsPerBlock;
-		const int64_t id{ dataBlock[startLong] >> startBit };
-		return blockPalette[id & maskBlock];
-	}
-	else
-	{
-		Section* const sec = world.getSection(this->position + glm::ivec3(sectionPos));
-		if (sec)
-			return sec->getBlock(validPos(blockPos));
+	
+		const glm::i8vec3 sectionPos = validSectionPos(blockPos);
+		if (sectionPos.x == 0 && sectionPos.y == 0 && sectionPos.z == 0)
+		{
+			if (blockPalette.empty() || dataBlock.empty())
+				return Section::stone;
+			const int32_t index = (((blockPos.y << 4u) + blockPos.z) << 4u) + blockPos.x;
+			const uint16_t startLong = index / countIndexPerLongBlock;
+			const uint8_t startBit = (index % countIndexPerLongBlock) * bitsPerBlock;
+			const int64_t id{ dataBlock[startLong] >> startBit };
+			return blockPalette[id & maskBlock];
+		}
 		else
-			return Section::stone;
-	}
+		{
+			Section* const sec = world.getSection(this->position + glm::ivec3(sectionPos));
+			if (sec && !sec->work.load())
+				return sec->getBlock(validPos(blockPos));
+			else
+				return Section::stone;
+		}
 }
 
 void Section::gen(uint64_t seed, const glm::vec2& chunkPos)
@@ -53,6 +49,19 @@ void Section::gen(uint64_t seed, const glm::vec2& chunkPos)
 
 void Section::genMesh()
 {
+	work.store(true);
+	buffer.store(false);
+	buffert.store(false);
+	vertex.clear();
+	color.clear();
+	UV.clear();
+	AO.clear();
+	indicies.clear();
+	vertext.clear();
+	colort.clear();
+	UVt.clear();
+	AOt.clear();
+	indiciest.clear();
 	TextureAtlas& atlas = RM::getAtlas("blocks");
 	auto opacity = [](const Enums::Block& block) -> bool
 	{
@@ -103,7 +112,7 @@ void Section::genMesh()
 	};
 	countVertex = 0;
 	countVertexTransperent = 0;
-	modified = false;
+	modified.store(false);
 	for (int8_t y = 0; y < 16; ++y)
 	{
 		for (int8_t z = 0; z < 16; ++z)
@@ -151,24 +160,24 @@ void Section::genMesh()
 							}
 							if (!opacity(pitem.id))
 							{
-								CubeHelper cube(*this, pitem, positionBlock, { x, y, z }, glm::vec2(variant.x, variant.y), item, countVertex, atlas, modelBlock.textures);
-								cube.addQuad(colorFloat, Enums::Direction::EAST);
-								cube.addQuad(colorFloat, Enums::Direction::WEST);
-								cube.addQuad(colorFloat, Enums::Direction::UP);
-								cube.addQuad(colorFloat, Enums::Direction::DOWN);
-								cube.addQuad(colorFloat, Enums::Direction::SOUTH);
-								cube.addQuad(colorFloat, Enums::Direction::NORTH);
+								CubeHelper cube(*this, pitem, positionBlock, colorFloat, { x, y, z }, glm::vec2(variant.x, variant.y), item, countVertex, atlas, modelBlock.textures);
+								cube.addQuad(Enums::Direction::EAST);
+								cube.addQuad(Enums::Direction::WEST);
+								cube.addQuad(Enums::Direction::UP);
+								cube.addQuad(Enums::Direction::DOWN);
+								cube.addQuad(Enums::Direction::SOUTH);
+								cube.addQuad(Enums::Direction::NORTH);
 								cube.add(vertex, UV, color, AO, indicies, countVertex);
 							}
 							else
 							{
-								CubeHelper cube(*this, pitem, positionBlock, { x, y, z }, glm::vec2(variant.x, variant.y), item, countVertexTransperent, atlas, modelBlock.textures);
-								cube.addQuad(colorFloat, Enums::Direction::EAST);
-								cube.addQuad(colorFloat, Enums::Direction::WEST);
-								cube.addQuad(colorFloat, Enums::Direction::UP);
-								cube.addQuad(colorFloat, Enums::Direction::DOWN);
-								cube.addQuad(colorFloat, Enums::Direction::SOUTH);
-								cube.addQuad(colorFloat, Enums::Direction::NORTH);
+								CubeHelper cube(*this, pitem, positionBlock, colorFloat, { x, y, z }, glm::vec2(variant.x, variant.y), item, countVertexTransperent, atlas, modelBlock.textures);
+								cube.addQuad(Enums::Direction::EAST);
+								cube.addQuad(Enums::Direction::WEST);
+								cube.addQuad(Enums::Direction::UP);
+								cube.addQuad(Enums::Direction::DOWN);
+								cube.addQuad(Enums::Direction::SOUTH);
+								cube.addQuad(Enums::Direction::NORTH);
 								cube.add(vertext, UVt, colort, AOt, indiciest, countVertexTransperent);
 							}
 						}
@@ -177,56 +186,23 @@ void Section::genMesh()
 			}
 		}
 	}
-	buffer = !vertex.empty();
-	buffert = !vertext.empty();
+	buffer.store(!vertex.empty());
+	buffert.store(!vertext.empty());
+	work.store(false);
 }
 
 void Section::loadBuffer()
 {
-	if (buffer)
-	{
-		buffer = false;
-		vao.loadData(0, vertex);
-		vao.loadData(1, color);
-		vao.loadData(2, UV);
-		vao.loadData(3, AO, GL_UNSIGNED_BYTE);
-		vao.loadIndices(indicies);
-		vertex.clear();
-		color.clear();
-		UV.clear();
-		AO.clear();
-		indicies.clear();
-		visible = true;
-	}
-	if (buffert)
-	{
-		buffert = false;
-		vaoTransperent.loadData(0, vertext);
-		vaoTransperent.loadData(1, colort);
-		vaoTransperent.loadData(2, UVt);
-		vaoTransperent.loadData(3, AOt, GL_UNSIGNED_BYTE);
-		vaoTransperent.loadIndices(indiciest);
-		vertext.clear();
-		colort.clear();
-		UVt.clear();
-		AOt.clear();
-		indiciest.clear();
-		visiblet = true;
-	}
-}
-
-void Section::draw()
-{
-	if (buffer)
-		loadBuffer();
-	if (visible)
-		vao.draw();
-}
-
-void Section::drawTransperent()
-{
-	if (buffert)
-		loadBuffer();
-	if (visiblet)
-		vaoTransperent.draw();
+	buffer.store(false);
+	buffert.store(false);
+	vertex.clear();
+	color.clear();
+	UV.clear();
+	AO.clear();
+	indicies.clear();
+	vertext.clear();
+	colort.clear();
+	UVt.clear();
+	AOt.clear();
+	indiciest.clear();
 }

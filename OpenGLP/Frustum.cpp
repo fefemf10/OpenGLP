@@ -83,7 +83,7 @@ int Frustum::SphereInFrustum(const glm::vec3& point, float radius) const
     return result;
 }
 
-int Frustum::CubeInFrustum(const glm::vec3& center, float x, float y, float z) const
+int Frustum::CubeInFrustum(const glm::vec3& center, const glm::vec3& size) const
 {
     // NOTE : This code can be optimized, it is just easier to read and understand as is
 
@@ -95,14 +95,14 @@ int Frustum::CubeInFrustum(const glm::vec3& center, float x, float y, float z) c
         int out = 0;
         int in = 0;
 
-        out += getDistance(planes[i], center + glm::vec3(-x, -y, -z)) < 0;
-        out += getDistance(planes[i], center + glm::vec3(x, -y, -z)) < 0;
-        out += getDistance(planes[i], center + glm::vec3(-x, -y, z)) < 0;
-        out += getDistance(planes[i], center + glm::vec3(x, -y, z)) < 0;
-        out += getDistance(planes[i], center + glm::vec3(-x, y, -z)) < 0;
-        out += getDistance(planes[i], center + glm::vec3(x, y, -z)) < 0;
-        out += getDistance(planes[i], center + glm::vec3(-x, y, z)) < 0;
-        out += getDistance(planes[i], center + glm::vec3(x, y, z)) < 0;
+        out += getDistance(planes[i], center + glm::vec3(-size.x, -size.y, -size.z)) < 0;
+        out += getDistance(planes[i], center + glm::vec3(size.x, -size.y, -size.z)) < 0;
+        out += getDistance(planes[i], center + glm::vec3(-size.x, -size.y, size.z)) < 0;
+        out += getDistance(planes[i], center + glm::vec3(size.x, -size.y, size.z)) < 0;
+        out += getDistance(planes[i], center + glm::vec3(-size.x, size.y, -size.z)) < 0;
+        out += getDistance(planes[i], center + glm::vec3(size.x, size.y, -size.z)) < 0;
+        out += getDistance(planes[i], center + glm::vec3(-size.x, size.y, size.z)) < 0;
+        out += getDistance(planes[i], center + glm::vec3(size.x, size.y, size.z)) < 0;
         in = 8 - out;
         // If all corners are out
         if (!in) {
