@@ -19,10 +19,16 @@ public:
 	void setTypeIndices(GLenum type);
 	void clear();
 private:
+	struct VBO
+	{
+		GLuint id;
+		uint32_t size;
+		GLenum type;
+	};
 	void copyAllVBO(const VAO& other);
 	GLuint vao{ 0 }, ibo{ 0 }, indicesCount{ 0 };
 	GLenum typeIndices = GL_UNSIGNED_INT;
-	std::vector<std::pair<GLuint, uint32_t>> buffers;
+	std::vector<VBO> buffers;
 };
 
 template<typename T>

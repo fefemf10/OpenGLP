@@ -77,7 +77,20 @@ void VAO::copyAllVBO(const VAO& other)
 	for (size_t i = 0; i < other.buffers.size(); i++)
 	{
 		glCreateBuffers(1, &buffers[i].first);
-		glCopyNamedBufferSubData(other.buffers[i].first, buffers[i].first, 0, 0, other.buffers[i].second);
+		glNamedBufferStorage(buffers[i].first, other.buffers[i].second, nullptr, 0);
+		glEnableVertexArrayAttrib(vao, i);
+		glVertexArrayAttribBinding(vao, i, i);
+		if (type == GL_UNSIGNED_BYTE || type == GL_UNSIGNED_SHORT || type == GL_UNSIGNED_INT || type == GL_BYTE || type == GL_SHORT || type == GL_INT)
+			glVertexArrayAttribIFormat(vao, i, 1, type, 0);
+		else
+			glVertexArrayAttribFormat(vao, i, sizeof(T) / sizeof(GL_FLOAT), type, GL_FALSE, 0);
+		glVertexArrayVertexBuffer(vao, i, buffers[buffer].first, 0, sizeof(T));
+		//glCopyNamedBufferSubData(other.buffers[i].first, buffers[i].first, 0, 0, other.buffers[i].second);
 		buffers[i].second = other.buffers[i].second;
 	}
+	glCreateBuffers(1, &ibo);
+	glNamedBufferStorage(ibo, other.indicesCount * (other.typeIndices == GL_UNSIGNED_INT ? 4 : 1), nullptr, 0);
+	glCopyNamedBufferSubData(other.ibo, ibo, 0, 0, other.indicesCount * (other.typeIndices == GL_UNSIGNED_INT ? 4 : 1 ));
+	glVertexArrayElementBuffer(vao, ibo);
+
 }

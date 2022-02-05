@@ -1,6 +1,6 @@
 #include "Block.hpp"
 #include <string>
-std::vector<Blocks::Block> Blocks::blocks;
+std::vector<Blocks::Block> Blocks::blocks(898);
 std::vector<Material> Blocks::blockMaterials;
 std::vector<Blocks::BlockStates> Blocks::blockStates;
 std::unordered_map<std::string, Blocks::Model> Blocks::models;
@@ -28,30 +28,34 @@ namespace Blocks
 	}
 	void loadBlocks()
 	{
-		std::ifstream jsonBlocksFile(paths::assets / paths::minecraft / paths::json / "blocks.json", std::ios::in);
-		using nlohmann::json;
-		json j;
-		jsonBlocksFile >> j;
-		jsonBlocksFile.close();
-		blocks.resize(j.size());
-		for (const auto& [key, value] : j.items())
-		{
-			Block b;
-			const size_t index = static_cast<size_t>(Enums::iBlock(key.substr(10)));
-			/*if (value.contains("properties"))
-				value["properties"].get_to(b.properties);
+		//std::ifstream jsonBlocksFile(paths::assets / paths::minecraft / paths::json / "blocks.bson", std::ios::in | std::ios::binary);
+		////std::ofstream jsonBlocksFile1(paths::assets / paths::minecraft / paths::json / "blocks.bson", std::ios::out | std::ios::binary);
+		//using nlohmann::json;
+		//json j;
+		//j = json::from_bson(jsonBlocksFile);
+		////jsonBlocksFile >> j;
+		//jsonBlocksFile.close();
+		//blocks.resize(898);
+		//json::to_bson(j, jsonBlocksFile1);
+		//jsonBlocksFile.close();
+		//for (const auto& [key, value] : j.items())
+		//{
+		//	Block b;
+		//	const size_t index = static_cast<size_t>(Enums::iBlock(key.substr(10)));
+		//	/*if (value.contains("properties"))
+		//		value["properties"].get_to(b.properties);
 
-			b.states.reserve(value["states"].size());
-			for (auto& [key2, value2] : value["states"].items())
-			{
-				State s;
-				(value2.contains("default")) ? s.defaultState = value2["default"] : s.defaultState = false;
-				s.id = value2["id"].get<uint16_t>();
-				if (value2.contains("properties"))
-					s.properties = value2["properties"].get<std::map<std::string, std::string>>();
-			}*/
-			blocks[index] = b;
-		}
+		//	b.states.reserve(value["states"].size());
+		//	for (auto& [key2, value2] : value["states"].items())
+		//	{
+		//		State s;
+		//		(value2.contains("default")) ? s.defaultState = value2["default"] : s.defaultState = false;
+		//		s.id = value2["id"].get<uint16_t>();
+		//		if (value2.contains("properties"))
+		//			s.properties = value2["properties"].get<std::map<std::string, std::string>>();
+		//	}*/
+		//	blocks[index] = b;
+		//}
 	}
 
 	void loadBlockMaterials()
@@ -105,7 +109,7 @@ namespace Blocks
 					{
 						std::vector<std::string> out;
 						char* next_token{};
-						char* token = strtok_s(const_cast<char*>(s.c_str()), delimiter.data(), &next_token);
+						const char* token = strtok_s(const_cast<char*>(s.c_str()), delimiter.data(), &next_token);
 						while (token != nullptr)
 						{
 							out.push_back(std::string(token));
@@ -339,18 +343,27 @@ namespace Blocks
 						for (auto& [key, value] : item["faces"].items())
 						{
 							Enums::Direction d;
-							if (key.starts_with('e'))
-								d = Enums::Direction::EAST;
-							else if (key.starts_with('w'))
-								d = Enums::Direction::WEST;
-							else if (key.starts_with('u'))
-								d = Enums::Direction::UP;
-							else if (key.starts_with('d'))
-								d = Enums::Direction::DOWN;
-							else if (key.starts_with('s'))
-								d = Enums::Direction::SOUTH;
-							else if (key.starts_with('n'))
-								d = Enums::Direction::NORTH;
+							switch (key[0])
+							{
+								case 'e':
+									d = Enums::Direction::EAST;
+									break;
+								case 'w':
+									d = Enums::Direction::WEST;
+									break;
+								case 'u':
+									d = Enums::Direction::UP;
+									break;
+								case 'd':
+									d = Enums::Direction::DOWN;
+									break;
+								case 's':
+									d = Enums::Direction::SOUTH;
+									break;
+								case 'n':
+									d = Enums::Direction::NORTH;
+									break;
+							}
 							Model::Element::Face face;
 							if (value.contains("uv"))
 								face.uv = value["uv"].get<glm::vec4>() * glm::vec4{ 0.0625f, 0.0625f, 0.0625f, 0.0625f };
@@ -362,19 +375,28 @@ namespace Blocks
 							}
 							if (value.contains("cullface"))
 							{
-								const std::string cullface = value["cullface"];
-								if (cullface.starts_with('e'))
+								std::string_view cullface(value["cullface"]);
+								switch (cullface[0])
+								{
+								case 'e':
 									face.cullface = Enums::Direction::EAST;
-								else if (cullface.starts_with('w'))
+									break;
+								case 'w':
 									face.cullface = Enums::Direction::WEST;
-								else if (cullface.starts_with('u'))
+									break;
+								case 'u':
 									face.cullface = Enums::Direction::UP;
-								else if (cullface.starts_with('d'))
+									break;
+								case 'd':
 									face.cullface = Enums::Direction::DOWN;
-								else if (cullface.starts_with('s'))
+									break;
+								case 's':
 									face.cullface = Enums::Direction::SOUTH;
-								else if (cullface.starts_with('n'))
+									break;
+								case 'n':
 									face.cullface = Enums::Direction::NORTH;
+									break;
+								}
 							}
 							if (value.contains("rotation"))
 								face.rotation = value["rotation"];
