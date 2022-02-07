@@ -74,6 +74,7 @@ void Window::loop()
 	VAO crosshair;
 	crosshair.addVBO(1);
 	crosshair.setTypeIndices(GL_UNSIGNED_BYTE);
+	crosshair.setPropertyBuffer(0, 2, GL_FLOAT);
 	crosshair.loadData(0, std::vector<glm::vec2>{ {-0.01f, -0.01f }, { 0.01f, 0.01f }, { -0.01f, 0.01f }, { 0.01f, -0.01f } });
 	crosshair.loadIndices(std::vector<uint8_t>{ 0, 1, 2, 3 });
 

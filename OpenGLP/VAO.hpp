@@ -5,6 +5,46 @@
 class VAO
 {
 public:
+	struct VBO
+	{
+		GLuint id;
+		uint32_t size;
+		GLenum attibType;
+		uint32_t attibSize;
+		static bool isIntegerType(GLenum type) noexcept
+		{
+			switch (type)
+			{
+			case GL_BYTE:
+			case GL_UNSIGNED_BYTE:
+			case GL_SHORT:
+			case GL_UNSIGNED_SHORT:
+			case GL_INT:
+			case GL_UNSIGNED_INT:
+				return true;
+			default:
+				return false;
+			}
+		}
+		static uint8_t getSizeAttribute(GLenum type) noexcept
+		{
+			switch (type)
+			{
+			case GL_BYTE:
+			case GL_UNSIGNED_BYTE:
+				return 1u;
+			case GL_SHORT:
+			case GL_UNSIGNED_SHORT:
+				return 2u;
+			case GL_INT:
+			case GL_UNSIGNED_INT:
+			case GL_FLOAT:
+				return 4u;
+			case GL_DOUBLE:
+				return 8u;
+			}
+		}
+	};
 	VAO();
 	VAO(const VAO& other);
 	VAO(VAO&& other) noexcept;
@@ -15,16 +55,11 @@ public:
 	template <typename T>
 	void loadIndices(const std::vector<T>& data);
 	template <typename T>
-	void loadData(const GLuint buffer, const std::vector<T>& data, GLenum type = GL_FLOAT);
-	void setTypeIndices(GLenum type);
+	void loadData(const GLuint buffer, const std::vector<T>& data);
+	void setTypeIndices(const GLenum type);
+	void setPropertyBuffer(const GLuint buffer, const GLint size, const GLenum type);
 	void clear();
 private:
-	struct VBO
-	{
-		GLuint id;
-		uint32_t size;
-		GLenum type;
-	};
 	void copyAllVBO(const VAO& other);
 	GLuint vao{ 0 }, ibo{ 0 }, indicesCount{ 0 };
 	GLenum typeIndices = GL_UNSIGNED_INT;
@@ -39,39 +74,29 @@ inline void VAO::loadIndices(const std::vector<T>& data)
 		glDeleteBuffers(1, &ibo);
 		glCreateBuffers(1, &ibo);
 		indicesCount = static_cast<GLuint>(data.size());
-		glNamedBufferStorage(ibo, data.size() * sizeof(T), data.data(), 0);
+		glNamedBufferStorage(ibo, data.size() * sizeof(T), data.data(), GL_DYNAMIC_STORAGE_BIT);
 	}
 	else
 	{
 		glNamedBufferSubData(ibo, 0, data.size() * sizeof(T), data.data());
 	}
-	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-	//glBufferData(GL_ELEMENT_ARRAY_BUFFER, data.size() * sizeof(T), data.data(), GL_STATIC_DRAW);
 	glVertexArrayElementBuffer(vao, ibo);
 }
 
 template<typename T>
-inline void VAO::loadData(const GLuint buffer, const std::vector<T>& data, GLenum type)
+inline void VAO::loadData(const GLuint buffer, const std::vector<T>& data)
 {
-	if (data.size() != buffers[buffer].second)
+	if (data.size() != buffers[buffer].size)
 	{
-		glDeleteBuffers(1, &buffers[buffer].first);
-		glCreateBuffers(1, &buffers[buffer].first);
-		buffers[buffer].second = static_cast<GLuint>(data.size());
-		glNamedBufferStorage(buffers[buffer].first, data.size() * sizeof(T), data.data(), 0);
+		glDeleteBuffers(1, &buffers[buffer].id);
+		glCreateBuffers(1, &buffers[buffer].id);
+		buffers[buffer].size = static_cast<GLuint>(data.size());
+		glNamedBufferStorage(buffers[buffer].id, data.size() * sizeof(T), data.data(), GL_DYNAMIC_STORAGE_BIT);
+		if (buffers[buffer].attibSize > 0)
+			glVertexArrayVertexBuffer(vao, buffer, buffers[buffer].id, 0, buffers[buffer].attibSize * VBO::getSizeAttribute(buffers[buffer].attibType));
 	}
 	else
 	{
-		glNamedBufferSubData(buffers[buffer].first, 0, data.size() * sizeof(T), data.data());
+		glNamedBufferSubData(buffers[buffer].id, 0, data.size() * sizeof(T), data.data());
 	}
-	//glBindBuffer(GL_ARRAY_BUFFER, buffers[buffer].first);
-	//glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(T), data.data(), GL_STATIC_DRAW);
-	//glVertexAttribPointer(buffer, sizeof(T) / sizeof(GL_FLOAT), GL_FLOAT, GL_FALSE, sizeof(T), nullptr);
-	glEnableVertexArrayAttrib(vao, buffer);
-	glVertexArrayAttribBinding(vao, buffer, buffer);
-	if (type == GL_UNSIGNED_BYTE || type == GL_UNSIGNED_SHORT || type == GL_UNSIGNED_INT || type == GL_BYTE || type == GL_SHORT || type == GL_INT)
-		glVertexArrayAttribIFormat(vao, buffer, 1, type, 0);
-	else
-		glVertexArrayAttribFormat(vao, buffer, sizeof(T) / sizeof(GL_FLOAT), type, GL_FALSE, 0);
-	glVertexArrayVertexBuffer(vao, buffer, buffers[buffer].first, 0, sizeof(T));
 }

@@ -237,6 +237,10 @@ void World::update(const float& dt)
 				{
 					chunks[local.y][local.x]->sections[i].dataBlock = blockStates.at<nbt::TagLongArray>("data");
 				}
+				else
+				{
+					chunks[local.y][local.x]->sections[i].dataBlock = std::vector<int64_t>(256, 0);
+				}
 				if (biomes.base.contains("data"))
 				{
 					chunks[local.y][local.x]->sections[i].dataBiome = biomes.at<nbt::TagLongArray>("data");
@@ -464,8 +468,8 @@ void World::draw()
 			{
 				chunks[z][x]->modified.store(false);
 				chunks[z][x]->work.store(true);
-				//poolChunks.enqueue(std::bind(&Chunk::genMesh, chunks[z][x]));
-				chunks[z][x]->genMesh();
+				poolChunks.enqueue(std::bind(&Chunk::genMesh, chunks[z][x]));
+				//chunks[z][x]->genMesh();
 			}
 			for (size_t y = 0; y < 20; y++)
 			{

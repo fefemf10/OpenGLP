@@ -10,13 +10,12 @@ VAO::VAO(const VAO& other)
 	glCreateVertexArrays(1, &vao);
 	addVBO(other.buffers.size());
 	copyAllVBO(other);
-	indicesCount = other.indicesCount;
 }
 
 VAO::VAO(VAO&& other) noexcept
 {
 	for (size_t i = 0; i < buffers.size(); ++i)
-		glDeleteBuffers(1, &buffers[i].first);
+		glDeleteBuffers(1, &buffers[i].id);
 	glDeleteBuffers(1, &ibo);
 	glDeleteVertexArrays(1, &vao);
 	buffers.clear();
@@ -34,7 +33,7 @@ VAO::~VAO()
 {
 	/*glDeleteBuffers(buffers.size(), buffers.data());*/
 	for (size_t i = 0; i < buffers.size(); ++i)
-		glDeleteBuffers(1, &buffers[i].first);
+		glDeleteBuffers(1, &buffers[i].id);
 	glDeleteBuffers(1, &ibo);
 	glDeleteVertexArrays(1, &vao);
 	ibo = 0;
@@ -55,42 +54,58 @@ void VAO::draw(const GLenum& mode) const
 void VAO::addVBO(GLuint count)
 {
 	buffers.resize(buffers.size() + count, { 0, 0 });
+	for (size_t i = 0; i < buffers.size(); i++)
+	{
+		glEnableVertexArrayAttrib(vao, i);
+		glVertexArrayAttribBinding(vao, i, i);
+	}
 }
 
-void VAO::setTypeIndices(GLenum type)
+void VAO::setTypeIndices(const GLenum type)
 {
 	typeIndices = type;
+}
+
+void VAO::setPropertyBuffer(const GLuint buffer, const GLint size, const GLenum type)
+{
+	buffers[buffer].attibSize = size;
+	buffers[buffer].attibType = type;
+	if (VBO::isIntegerType(type))
+		glVertexArrayAttribIFormat(vao, buffer, size, type, 0);
+	else
+		glVertexArrayAttribFormat(vao, buffer, size, type, GL_FALSE, 0);
 }
 
 void VAO::clear()
 {
 	for (size_t i = 0; i < buffers.size(); i++)
 	{
-		glDeleteBuffers(1, &buffers[i].first);
-		buffers[i].second = 0u;
+		glDeleteBuffers(1, &buffers[i].id);
+		buffers[i].size = 0u;
 	}
 	indicesCount = 0;
 }
 
 void VAO::copyAllVBO(const VAO& other)
 {
-	for (size_t i = 0; i < other.buffers.size(); i++)
+	buffers = other.buffers;
+	indicesCount = other.indicesCount;
+	for (size_t i = 0; i < buffers.size(); i++)
 	{
-		glCreateBuffers(1, &buffers[i].first);
-		glNamedBufferStorage(buffers[i].first, other.buffers[i].second, nullptr, 0);
-		glEnableVertexArrayAttrib(vao, i);
-		glVertexArrayAttribBinding(vao, i, i);
-		if (type == GL_UNSIGNED_BYTE || type == GL_UNSIGNED_SHORT || type == GL_UNSIGNED_INT || type == GL_BYTE || type == GL_SHORT || type == GL_INT)
-			glVertexArrayAttribIFormat(vao, i, 1, type, 0);
-		else
-			glVertexArrayAttribFormat(vao, i, sizeof(T) / sizeof(GL_FLOAT), type, GL_FALSE, 0);
-		glVertexArrayVertexBuffer(vao, i, buffers[buffer].first, 0, sizeof(T));
-		//glCopyNamedBufferSubData(other.buffers[i].first, buffers[i].first, 0, 0, other.buffers[i].second);
-		buffers[i].second = other.buffers[i].second;
+		glCreateBuffers(1, &buffers[i].id);
+		if (buffers[i].size > 0)
+			glNamedBufferStorage(buffers[i].id, buffers[i].size, nullptr, GL_DYNAMIC_STORAGE_BIT);
+		setPropertyBuffer(i, buffers[i].attibSize, buffers[i].attibType);
+		if (buffers[i].attibSize > 0)
+			glVertexArrayVertexBuffer(vao, i, buffers[i].id, 0, buffers[i].attibSize * VBO::getSizeAttribute(buffers[i].attibType));
+		if (buffers[i].size > 0)
+		glCopyNamedBufferSubData(other.buffers[i].id, buffers[i].id, 0, 0, buffers[i].size);
 	}
 	glCreateBuffers(1, &ibo);
-	glNamedBufferStorage(ibo, other.indicesCount * (other.typeIndices == GL_UNSIGNED_INT ? 4 : 1), nullptr, 0);
-	glCopyNamedBufferSubData(other.ibo, ibo, 0, 0, other.indicesCount * (other.typeIndices == GL_UNSIGNED_INT ? 4 : 1 ));
+	if (indicesCount > 0)
+	{
+		glNamedBufferStorage(ibo, indicesCount * VBO::getSizeAttribute(typeIndices), nullptr, GL_DYNAMIC_STORAGE_BIT);
+		glCopyNamedBufferSubData(other.ibo, ibo, 0, 0, indicesCount * VBO::getSizeAttribute(typeIndices));
+	}
 	glVertexArrayElementBuffer(vao, ibo);
-
 }

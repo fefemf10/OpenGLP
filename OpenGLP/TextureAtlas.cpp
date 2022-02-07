@@ -45,6 +45,8 @@ TextureAtlas::~TextureAtlas()
 void TextureAtlas::loadTexture(const std::string& name, const std::string& path)
 {
 	int bpp{}, width{}, height{}, format{};
+	if (name.ends_with("_flow"))
+		return;
 	unsigned char* data = stbi_load(path.c_str(), &width, &height, &bpp, 0);
 	switch (bpp)
 	{
