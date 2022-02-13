@@ -11,6 +11,7 @@ public:
 	glm::ivec3 position{};
 	glm::ivec2 localPosition{};
 	double seed{};
+	uint8_t sectionCount{};
 	std::vector<std::vector<Chunk*>>& chunks;
 	std::vector<Section> sections;
 	std::vector<int64_t> motion_blocking;

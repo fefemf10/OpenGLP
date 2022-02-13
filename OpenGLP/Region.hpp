@@ -22,6 +22,7 @@ namespace nbt
 		Region();
 		void serialize(std::fstream& stream);
 		void deserialize(std::fstream& stream);
+		void readLT(std::fstream& stream);
 		void deserialize(std::fstream& stream, uint8_t x, uint8_t z);
 		uint16_t getChunkLocation(uint8_t x, uint8_t z) const;
 		uint32_t getChunkLocationOffset(uint32_t location) const;

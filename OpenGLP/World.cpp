@@ -20,12 +20,14 @@ World::World(const std::string& name, Player& player, Camera& camera) : player(p
 	this->worldDir = worldDir;
 	int a = player.getRenderDistance() * 2 + 1;
 	chunks.resize(a, std::vector<Chunk*>(a, nullptr));
-	sectionMesh.resize(a, std::vector<std::vector<SectionMesh>>(a, std::vector<SectionMesh>(20)));
+	sectionMesh.resize(a, std::vector<std::vector<SectionMesh>>(a, std::vector<SectionMesh>(24)));
+	jobChunk.resize(a, std::vector<JobSection>(a));
 	for (int z = 0; z < a; z++)
 	{
 		for (int x = 0; x < a; x++)
 		{
 			chunks[z][x] = new Chunk(chunks);
+			chunks[z][x]->sections.resize(24, Section(*this));
 		}
 	}
 	endLocalPosChunk = {a-1, a-1};
@@ -196,9 +198,20 @@ void World::update(const float& dt)
 		glm::ivec2 regionPos = pos >> 5;
 		glm::ivec2 chunkPos = (glm::ivec2(32) + pos) % 32;
 		std::fstream region(worldDir / "region" / std::string("r." + std::to_string(regionPos.x) + "." + std::to_string(regionPos.y) + ".mca"), std::ios::in | std::ios::binary);
-		if (region.is_open())
+		if (regions.contains(regionPos))
 		{
-			regions[regionPos].deserialize(region, chunkPos.x, chunkPos.y);
+			if (region.is_open())
+			{
+				regions[regionPos].deserialize(region, chunkPos.x, chunkPos.y);
+			}
+		}
+		else
+		{
+			if (region.is_open())
+			{
+				regions[regionPos].readLT(region);
+				regions[regionPos].deserialize(region, chunkPos.x, chunkPos.y);
+			}
 		}
 		region.close();
 		if ((local.x >= 0 && local.x < a) && (local.y >= 0 && local.y < a) && !chunks[local.y][local.x]->work.load())
@@ -215,7 +228,7 @@ void World::update(const float& dt)
 			chunks[local.y][local.x]->position.z = chunk.at<nbt::TagInt>("zPos");
 			chunks[local.y][local.x]->localPosition = local;
 			std::vector<nbt::TagCompound>& sections = nbt::get_list<nbt::TagCompound>(chunk.at<nbt::TagList>("sections"));
-			chunks[local.y][local.x]->sections.resize(sections.size(), Section(*this));
+			chunks[local.y][local.x]->sectionCount = sections.size();
 			for (size_t i = 0; i < sections.size(); ++i)
 			{
 				chunks[local.y][local.x]->sections[i].work.store(true);
@@ -471,7 +484,7 @@ void World::draw()
 				poolChunks.enqueue(std::bind(&Chunk::genMesh, chunks[z][x]));
 				//chunks[z][x]->genMesh();
 			}
-			for (size_t y = 0; y < 20; y++)
+			for (size_t y = 0; y < 24; y++)
 			{
 				if (y < chunks[z][x]->sections.size())
 				{

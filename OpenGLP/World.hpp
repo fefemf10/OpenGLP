@@ -37,6 +37,11 @@ public:
 	GLuint countVertex;
 	GLuint countVertexTransperent;
 	uint32_t countVisibleSection;
+	struct JobSection
+	{
+		std::queue<std::function<void>> loadSection;
+		std::queue<std::function<void>> generateMesh;
+	};
 private:
 	bool validateLocalPosChunk(const glm::ivec2& position);
 	glm::uvec2 endLocalPosChunk;
@@ -45,6 +50,7 @@ private:
 	queuep drawq;
 	std::vector<std::vector<Chunk*>> chunks;
 	std::vector<std::vector<std::vector<SectionMesh>>> sectionMesh;
+	std::vector<std::vector<JobSection>> jobChunk;
 	Player& player;
 	Camera& camera;
 	glm::ivec2 playerLastPosition;

@@ -39,11 +39,15 @@ namespace nbt
         }
     }
 
-    void Region::deserialize(std::fstream& stream, uint8_t x, uint8_t z)
+    void Region::readLT(std::fstream& stream)
     {
         stream.seekg(0u);
         stream.read(reinterpret_cast<char*>(locations), sizeof(locations));
         stream.read(reinterpret_cast<char*>(timestamps), sizeof(timestamps));
+    }
+
+    void Region::deserialize(std::fstream& stream, uint8_t x, uint8_t z)
+    {
         stream.seekg(getChunkLocationOffset(locations[getChunkLocation(x, z)]) * 4096);
         uint32_t lengthChunk{};
         stream.read(reinterpret_cast<char*>(&lengthChunk), sizeof(uint32_t));

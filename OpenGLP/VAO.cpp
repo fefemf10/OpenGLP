@@ -81,6 +81,11 @@ void VAO::clear()
 	for (size_t i = 0; i < buffers.size(); i++)
 	{
 		glDeleteBuffers(1, &buffers[i].id);
+		glCreateBuffers(1, &buffers[i].id);
+		glNamedBufferStorage(buffers[i].id, buffers[i].size, nullptr, GL_DYNAMIC_STORAGE_BIT);
+		setPropertyBuffer(i, buffers[i].attibSize, buffers[i].attibType);
+		if (buffers[i].attibSize > 0)
+			glVertexArrayVertexBuffer(vao, i, buffers[i].id, 0, buffers[i].attibSize * VBO::getSizeAttribute(buffers[i].attibType));
 		buffers[i].size = 0u;
 	}
 	indicesCount = 0;
