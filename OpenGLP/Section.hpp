@@ -2,7 +2,6 @@
 #include <vector>
 #include <atomic>
 #include <GLM/glm.hpp>
-
 #include "CubeHelper.hpp"
 class World;
 
@@ -13,6 +12,7 @@ struct Section
 	Section(const Section& other) noexcept;
 	static const glm::i8vec3& validPos(const glm::i8vec3& pos) noexcept;
 	static const glm::ivec3& validSectionPos(const glm::i8vec3& pos) noexcept;
+	bool hasOnlyAir() const;
 	std::vector<int8_t> blockLight;
 	std::vector<int8_t> skyLight;
 	std::vector<int64_t> dataBlock;
@@ -26,6 +26,7 @@ struct Section
 	  4
 	  0*/
 	glm::ivec3 position{};
+	void floodfill();
 	const PaletteItem& getBlock(const glm::i8vec3& blockPos);
 	uint8_t bitsPerBlock{};
 	uint8_t bitsPerBiome{};
@@ -33,6 +34,7 @@ struct Section
 	uint8_t countIndexPerLongBiome{};
 	int64_t maskBlock{};
 	int64_t maskBiome{};
+	bool flood[6][6]{};
 	void gen(uint64_t seed, const glm::vec2& chunkPos);
 	GLuint countVertex{};
 	GLuint countVertexTransperent{};

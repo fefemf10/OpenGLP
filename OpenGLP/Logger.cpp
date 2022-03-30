@@ -1,21 +1,30 @@
 #include "Logger.hpp"
 
-std::ofstream Logger::file;
+std::ofstream Logger::openglf;
+std::ofstream Logger::debugf;
 
 void Logger::init()
 {
-	file.open("logs\\" + currentDateTime() + ".txt", std::ios::ate);
+	openglf.open("logs\\opengl\\" + currentDateTime() + ".log", std::ios::ate);
+	debugf.open("logs\\debug.log", std::ios::out | std::ios::trunc);
 }
 
-void Logger::log(const std::string& log)
+void Logger::opengl(std::string_view str)
 {
-	file << '[' + currentDateTime() + "] " << log << "\n";
-	file.flush();
+	openglf << '[' + currentDateTime() + "] " << str << "\n";
+	openglf.flush();
+}
+
+void Logger::debug(std::string_view str)
+{
+	debugf << '[' + currentDateTime() + "] " << str << "\n";
+	debugf.flush();
 }
 
 void Logger::deinit()
 {
-	file.close();
+	openglf.close();
+	debugf.close();
 }
 
 const std::string Logger::currentDateTime()

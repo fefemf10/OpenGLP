@@ -46,7 +46,7 @@ public:
 		}
 	};
 	VAO();
-	VAO(const VAO& other) = default;
+	VAO(const VAO& other) = delete;
 	VAO(VAO&& other) noexcept;
 	~VAO();
 	void bind() const;

@@ -13,13 +13,15 @@
 #include "Camera.hpp"
 #include "Chunk.hpp"
 #include "Region.hpp"
-#include "NBTFile.hpp"
-#include "nbt.hpp"
 #include "SectionMesh.hpp"
+#include "Enums.hpp"
+#include "Dispatcher.hpp"
+#include "ChunkObserver.hpp"
+#include "WorldInfo.hpp"
 class World
 {
 public:
-	World(const std::string& name, Player& player, Camera& camera);
+	World(Player& player, Camera& camera);
 	void saveWorld();
 	std::string getBlock(const glm::ivec3& position);
 	Chunk* getChunk(const glm::ivec2& position);
@@ -27,6 +29,8 @@ public:
 	void setBlock(const glm::ivec3& position, const std::string& id);
 	void loadChunks();
 	uint64_t getSeed() const;
+	glm::ivec2 getLocalPositionChunk(const glm::ivec2& position) const;
+	bool validateLocalPosChunk(const glm::ivec2& position) const;
 	unsigned short getCountChunks();
 	std::string rayCast(const glm::vec3& pos, const glm::vec3& dir, float maxDist, glm::vec3& end, glm::vec3& norm, glm::vec3& iend);
 	void update(const float& dt);
@@ -37,28 +41,22 @@ public:
 	GLuint countVertex;
 	GLuint countVertexTransperent;
 	uint32_t countVisibleSection;
-	struct JobSection
-	{
-		std::queue<std::function<void>> loadSection;
-		std::queue<std::function<void>> generateMesh;
-	};
+	std::vector<std::vector<Chunk*>> chunks;
+	std::vector<std::vector<std::vector<SectionMesh*>>> sectionMesh;
+	queuep genMeshq;
 private:
-	bool validateLocalPosChunk(const glm::ivec2& position);
+	
+	bool loadedNeighbours(const glm::ivec2& position);
 	glm::uvec2 endLocalPosChunk;
 	ThreadPool poolChunks;
-	queuep loadq;
-	queuep drawq;
-	std::vector<std::vector<Chunk*>> chunks;
-	std::vector<std::vector<std::vector<SectionMesh>>> sectionMesh;
-	std::vector<std::vector<JobSection>> jobChunk;
 	Player& player;
 	Camera& camera;
+	WorldInfo& worldInfo;
 	glm::ivec2 playerLastPosition;
-	std::filesystem::path worldDir;
 	bool firstLoad = true;
 	uint64_t seed;
-	nbt::NBTFile level;
-	std::unordered_map<glm::ivec2, nbt::Region> regions;
 	unsigned short countChunks;
 	float tick{};
+	ChunkObserver chunkObserver;
+	Dispatcher dispatcher;
 };

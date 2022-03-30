@@ -78,13 +78,21 @@ namespace Blocks
 		//std::vector<State> states;
 		Enums::Material material{};
 	};
+	struct BlockMesh
+	{
+		std::vector<glm::vec3> vertex;
+		std::vector<glm::vec3> UV;
+		std::vector<uint32_t> indicies;
+	};
 	void loadBlocks();
 	void loadBlockMaterials();
 	void loadBlockStates();
 	void loadModels();
 	void loadTextures();
+	void generateBlockMesh();
 	extern std::vector<Block> blocks;
 	extern std::vector<Material> blockMaterials;
+	extern std::unordered_map<std::string, Blocks::BlockMesh> blockMesh;
 	extern std::vector<Blocks::BlockStates> blockStates;
 	extern std::unordered_map<std::string, Blocks::Model> models;
 }

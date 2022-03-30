@@ -22,15 +22,18 @@
     <Filter Include="Исходные файлы\GUI">
       <UniqueIdentifier>{fb716de7-06d5-4b85-9d96-8016c0ce586e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Файлы заголовков\Event">
+      <UniqueIdentifier>{eb6aecae-bfea-42c3-8a20-ee198c9ebd40}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\Event">
+      <UniqueIdentifier>{07acb669-8772-44b8-a1bc-c24db563c5a1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
     <ClCompile Include="stb_image.cpp">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
-    <ClCompile Include="Event.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
     <ClCompile Include="Hitbox.cpp">
@@ -159,12 +162,27 @@
     <ClCompile Include="SectionMesh.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="Observer.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="Event.cpp">
+      <Filter>Исходные файлы\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="Dispatcher.cpp">
+      <Filter>Исходные файлы\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="ChunkObserver.cpp">
+      <Filter>Исходные файлы\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="DiskSystem.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="WorldInfo.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stb_image.hpp">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-    <ClInclude Include="Event.hpp">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="Hitbox.hpp">
@@ -300,6 +318,27 @@
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="SectionMesh.hpp">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="Observer.hpp">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="Dispatcher.hpp">
+      <Filter>Файлы заголовков\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="ChunkObserver.hpp">
+      <Filter>Файлы заголовков\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Event.hpp">
+      <Filter>Файлы заголовков\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="State.hpp">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="DiskSystem.hpp">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="WorldInfo.hpp">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>

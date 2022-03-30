@@ -1,7 +1,9 @@
 #include "Block.hpp"
+#include "CubeHelper.hpp"
 #include <string>
 std::vector<Blocks::Block> Blocks::blocks(898);
 std::vector<Material> Blocks::blockMaterials;
+std::unordered_map<std::string, Blocks::BlockMesh> Blocks::blockMesh;
 std::vector<Blocks::BlockStates> Blocks::blockStates;
 std::unordered_map<std::string, Blocks::Model> Blocks::models;
 namespace Blocks
@@ -345,24 +347,24 @@ namespace Blocks
 							Enums::Direction d;
 							switch (key[0])
 							{
-								case 'e':
-									d = Enums::Direction::EAST;
-									break;
-								case 'w':
-									d = Enums::Direction::WEST;
-									break;
-								case 'u':
-									d = Enums::Direction::UP;
-									break;
-								case 'd':
-									d = Enums::Direction::DOWN;
-									break;
-								case 's':
-									d = Enums::Direction::SOUTH;
-									break;
-								case 'n':
-									d = Enums::Direction::NORTH;
-									break;
+							case 'e':
+								d = Enums::Direction::EAST;
+								break;
+							case 'w':
+								d = Enums::Direction::WEST;
+								break;
+							case 'u':
+								d = Enums::Direction::UP;
+								break;
+							case 'd':
+								d = Enums::Direction::DOWN;
+								break;
+							case 's':
+								d = Enums::Direction::SOUTH;
+								break;
+							case 'n':
+								d = Enums::Direction::NORTH;
+								break;
 							}
 							Model::Element::Face face;
 							if (value.contains("uv"))
@@ -401,7 +403,7 @@ namespace Blocks
 							if (value.contains("rotation"))
 								face.rotation = value["rotation"];
 							if (value.contains("tintindex"))
-								face.tintindex = value["tintindex"];
+								face.tintindex = 0;
 							e.faces.insert({ d, face });
 						}
 					}
@@ -447,6 +449,107 @@ namespace Blocks
 			if (t.path().extension() != ".mcmeta")
 				atlas.loadTexture(name + t.path().stem().string(), t.path().string());
 		}
+	}
+	void generateBlockMesh()
+	{
+		/*std::array<glm::vec3, 8> cube;
+		for (const auto& [key, value] : Blocks::models)
+		{
+			std::vector<glm::vec3>& vertex = blockMesh[key].vertex;
+			std::vector<glm::vec3>& UV = blockMesh[key].UV;
+			std::vector<uint32_t>& indicies = blockMesh[key].indicies;
+			uint32_t countVertex{};
+			for (const auto& item : value.elements)
+			{
+				cube = {
+					glm::vec3{ item.from.x, item.to.y, item.to.z },
+					{ item.from.x, item.from.y, item.to.z },
+					{ item.to.x, item.from.y, item.to.z },
+					{ item.to.x, item.to.y, item.to.z },
+					{ item.from.x, item.to.y, item.from.z },
+					{ item.from.x, item.from.y, item.from.z },
+					{ item.to.x, item.from.y, item.from.z },
+					{ item.to.x, item.to.y, item.from.z }
+				};
+				if (item.rotation.rescale)
+				{
+					if (glm::abs(item.rotation.angle) == 45.f)
+					{
+						const glm::vec3 rescale(1.41421358f, 1.f, 1.41421358f);
+						const glm::vec3 origin(0.5f, 0.f, 0.5f);
+						cube[0] -= origin;
+						cube[1] -= origin;
+						cube[2] -= origin;
+						cube[3] -= origin;
+						cube[4] -= origin;
+						cube[5] -= origin;
+						cube[6] -= origin;
+						cube[7] -= origin;
+						cube[0] *= rescale;
+						cube[1] *= rescale;
+						cube[2] *= rescale;
+						cube[3] *= rescale;
+						cube[4] *= rescale;
+						cube[5] *= rescale;
+						cube[6] *= rescale;
+						cube[7] *= rescale;
+						cube[0] += origin;
+						cube[1] += origin;
+						cube[2] += origin;
+						cube[3] += origin;
+						cube[4] += origin;
+						cube[5] += origin;
+						cube[6] += origin;
+						cube[7] += origin;
+					}
+					else
+					{
+						const glm::vec3 rescale(1.08239223f, 1.f, 1.08239223f);
+						const glm::vec3 origin(0.5f, 0.f, 0.5f);
+						cube[0] -= origin;
+						cube[1] -= origin;
+						cube[2] -= origin;
+						cube[3] -= origin;
+						cube[4] -= origin;
+						cube[5] -= origin;
+						cube[6] -= origin;
+						cube[7] -= origin;
+						cube[0] *= rescale;
+						cube[1] *= rescale;
+						cube[2] *= rescale;
+						cube[3] *= rescale;
+						cube[4] *= rescale;
+						cube[5] *= rescale;
+						cube[6] *= rescale;
+						cube[7] *= rescale;
+						cube[0] += origin;
+						cube[1] += origin;
+						cube[2] += origin;
+						cube[3] += origin;
+						cube[4] += origin;
+						cube[5] += origin;
+						cube[6] += origin;
+						cube[7] += origin;
+					}
+				}
+				if (item.rotation.angle != 0.f)
+					CubeHelper::rotateCube(cube, item.rotation.axis, -item.rotation.angle, item.rotation.origin);
+				std::array<std::array<glm::vec3, 4>, 6> cubefaces;
+				cubefaces =
+				{
+					std::array<glm::vec3, 4>{ cube[3], cube[2], cube[6], cube[7] },
+					{ cube[4], cube[5], cube[1], cube[0] },
+					{ cube[4], cube[0], cube[3], cube[7] },
+					{ cube[1], cube[5], cube[6], cube[2] },
+					{ cube[0], cube[1], cube[2], cube[3] },
+					{ cube[7], cube[6], cube[5], cube[4] }
+				};
+				vertex.insert(vertex.end(), cubefaces.begin(), cubefaces.end());
+				rotateFunc(f.uv, f.rotation, texture);
+				indicies.insert(indicies.end(), { countVertex, countVertex + 1, countVertex + 3, countVertex + 1, countVertex + 2, countVertex + 3 });
+				countVertex += 4;
+			}
+		}*/
 	}
 	const Variant& BlockStates::getVariant(std::map<Enums::PropertiesBlock, uint8_t> prop)
 	{

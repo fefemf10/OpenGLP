@@ -1,32 +1,50 @@
 #include "Chunk.hpp"
-
-Chunk::Chunk(std::vector<std::vector<Chunk*>>& chunks) : chunks(chunks)
-{
-}
+#include "State.hpp"
 
 void Chunk::genMesh()
 {
-	modified.store(false);
-	work.store(true);
-	for (size_t i = 0; i < sections.size(); ++i)
-	{
-		if (!sections[i].blockPalette.empty())
-		{
-			if (!(sections[i].blockPalette.size() == 1 && sections[i].blockPalette[0].id == Enums::Block::AIR) && !sections[i].work.load())
-			{
-				sections[i].genMesh();
-			}
-		}
-	}
-	work.store(false);
+	for (auto& section : sections)
+		if (!section.hasOnlyAir())
+			section.genMesh();
 }
 
 Section* Chunk::getSection(int32_t position)
 {
-	for (size_t i = 0; i < sections.size(); ++i)
-	{
-		if (sections[i].position.y == position)
-			return &sections[i];
-	}
+	for (auto& section : sections)
+		if (section.position.y == position)
+			return &section;
 	return nullptr;
+}
+
+bool Chunk::isModified() const
+{
+	for (auto& section : sections)
+		if (section.modified.load())
+			return true;
+	return false;
+}
+
+bool Chunk::isWork() const
+{
+	for (auto& section : sections)
+		if (section.work.load())
+			return true;
+	return false;
+}
+
+void Chunk::setModified(bool value)
+{
+	for (auto& section : sections)
+	{
+		section.modified.store(value);
+		section.modified.notify_all();
+	}
+}
+
+void Chunk::setWork(bool value)
+{
+	for (auto& section : sections)
+		section.work.store(value);
+	work.store(value);
+	work.notify_all();
 }

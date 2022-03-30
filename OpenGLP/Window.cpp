@@ -66,22 +66,25 @@ void Window::loop()
 	{
 		ThreadPool pool(2);
 		pool.enqueue([]() { Blocks::loadBlocks(); Blocks::loadBlockMaterials(); });
-		pool.enqueue([]() { Blocks::loadBlockStates(); Blocks::loadModels(); });
+		pool.enqueue([]() { Blocks::loadBlockStates(); Blocks::loadModels(); Blocks::generateBlockMesh(); });
 		pool.enqueue(&Biomes::loadBiomes);
 	}
 
 
 	VAO crosshair;
+	crosshair.addVAO();
 	crosshair.addVBO(1);
 	crosshair.setTypeIndices(GL_UNSIGNED_BYTE);
-	crosshair.setPropertyBuffer(0, 2, GL_FLOAT);
+	crosshair[0].attibSize = 2;
+	crosshair[0].attibType = GL_FLOAT;
 	crosshair.loadData(0, std::vector<glm::vec2>{ {-0.01f, -0.01f }, { 0.01f, 0.01f }, { -0.01f, 0.01f }, { 0.01f, -0.01f } });
 	crosshair.loadIndices(std::vector<uint8_t>{ 0, 1, 2, 3 });
 
 	Player player;
 	player.setRenderDistance(dist);
 	Camera camera(player);
-	World world("118", player, camera);
+	DiskSystem::loadWorld("118");
+	World world(player, camera);
 
 	shader.setMatrix("projection", 1, GL_FALSE, camera.getProjection());
 
@@ -123,6 +126,7 @@ void Window::loop()
 			ImGui::Text("Look player x = %.2f y = %.2f z = %.2f", player.getLook().x, player.getLook().y, player.getLook().z);
 			ImGui::Text("Position player x = %.2f y = %.2f z = %.2f", player.getPosition().x, player.getPosition().y, player.getPosition().z);
 			ImGui::Text("Position player chunk x = %i y = %i z = %i", (int)(player.getPosition().x) >> 4, (int)(player.getPosition().y) >> 4, (int)(player.getPosition().z) >> 4);
+			ImGui::Text("Position player in chunk x = %i y = %i z = %i", (int)(player.getPosition().x) - ((int)(player.getPosition().x) >> 4 << 4) , (int)(player.getPosition().y) - ((int)(player.getPosition().y) >> 4 << 4), (int)(player.getPosition().z) - ((int)(player.getPosition().z) >> 4 << 4));
 			ImGui::Text("Position player region x = %i z = %i", (int)(player.getPosition().x) >> 9, (int)(player.getPosition().z) >> 9);
 			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 			ImGui::End();
@@ -213,7 +217,7 @@ void Window::loop()
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		glfwSwapBuffers(window);
-	}
+ 	}
 	world.saveWorld();
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
@@ -256,5 +260,5 @@ void Window::message_callback(GLenum source, GLenum type, GLuint id, GLenum seve
 		}
 	}();
 
-	Logger::log(std::string(src_str) + ", " + std::string(type_str) + ", " + std::string(severity_str) + ", " + std::to_string(id) + ": " + std::string(message));
+	Logger::opengl(std::string(src_str) + ", " + std::string(type_str) + ", " + std::string(severity_str) + ", " + std::to_string(id) + ": " + std::string(message));
 }

@@ -17,6 +17,7 @@
 #include "World.hpp"
 #include "Block.hpp"
 #include "stb_image_write.hpp"
+#include "DiskSystem.hpp"
 class Window
 {
 public:

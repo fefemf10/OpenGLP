@@ -1,43 +1,54 @@
 #include "World.hpp"
+#include "DiskSystem.hpp"
+#include "Logger.hpp"
+#include "State.hpp"
 
-World::World(const std::string& name, Player& player, Camera& camera) : player(player), camera(camera), poolChunks(std::thread::hardware_concurrency())
+World::World(Player& player, Camera& camera) : player(player), camera(camera), poolChunks(std::thread::hardware_concurrency()), chunkObserver(*this), worldInfo(DiskSystem::worldInfo)
 {
-	if (!std::filesystem::exists(std::filesystem::current_path() / "saves"))
-		std::filesystem::create_directory(std::filesystem::current_path() / "saves");
-	std::filesystem::path worldDir = std::filesystem::current_path() / "saves" / name;
-	if (!std::filesystem::exists(worldDir))
-		std::filesystem::create_directory(worldDir);
-	if (std::filesystem::exists(worldDir / "level.dat"))
-	{
-		level.deserialize((worldDir / "level.dat").string(), true);
-	}
-	else
-	{
-
-	}
-	nbt::TagCompound data = level.root.at<nbt::TagCompound>("Data");
-	player.setPosition({ data.at<nbt::TagInt>("SpawnX"), data.at<nbt::TagInt>("SpawnY"), data.at<nbt::TagInt>("SpawnZ") });
-	this->worldDir = worldDir;
+	player.setPosition({ worldInfo.spawnX, worldInfo.spawnY, worldInfo.spawnZ, });
 	int a = player.getRenderDistance() * 2 + 1;
 	chunks.resize(a, std::vector<Chunk*>(a, nullptr));
-	sectionMesh.resize(a, std::vector<std::vector<SectionMesh>>(a, std::vector<SectionMesh>(24)));
-	jobChunk.resize(a, std::vector<JobSection>(a));
+	sectionMesh.resize(a, std::vector<std::vector<SectionMesh*>>(a, std::vector<SectionMesh*>(25, nullptr)));
+	genMeshq.update(glm::ivec2(a) / 2);
 	for (int z = 0; z < a; z++)
 	{
 		for (int x = 0; x < a; x++)
 		{
-			chunks[z][x] = new Chunk(chunks);
-			chunks[z][x]->sections.resize(24, Section(*this));
+			chunks[z][x] = new Chunk();
+			chunks[z][x]->sections.resize(25, Section(*this));
+			for (size_t y = 0; y < 25; y++)
+			{
+				sectionMesh[z][x][y] = new SectionMesh();
+				sectionMesh[z][x][y]->init();
+			}
 		}
 	}
-	endLocalPosChunk = {a-1, a-1};
+	endLocalPosChunk = { a - 1, a - 1 };
 	loadChunks();
 	firstLoad = false;
+	dispatcher.subscribe(Events::ChunkLoadedEvent, std::bind(&ChunkObserver::handle, chunkObserver, std::placeholders::_1));
+	dispatcher.subscribe(Events::ChunkFloodfilledEvent, std::bind(&ChunkObserver::handle, chunkObserver, std::placeholders::_1));
+	dispatcher.subscribe(Events::ChunkMeshedEvent, std::bind(&ChunkObserver::handle, chunkObserver, std::placeholders::_1));
+	dispatcher.subscribe(Events::ChunkNeedLoadEvent, std::bind(&ChunkObserver::handle, chunkObserver, std::placeholders::_1));
+	dispatcher.subscribe(Events::ChunkNeedFloodfillEvent, std::bind(&ChunkObserver::handle, chunkObserver, std::placeholders::_1));
+	dispatcher.subscribe(Events::ChunkNeedMeshEvent, std::bind(&ChunkObserver::handle, chunkObserver, std::placeholders::_1));
 }
 
 void World::saveWorld()
 {
 	poolChunks.stop();
+	const int a = player.getRenderDistance() * 2 + 1;
+	for (int z = 0; z < a; z++)
+	{
+		for (int x = 0; x < a; x++)
+		{
+			delete chunks[z][x];
+			for (size_t y = 0; y < 25; y++)
+			{
+				delete sectionMesh[z][x][y];
+			}
+		}
+	}
 }
 
 std::string World::getBlock(const glm::ivec3& position)
@@ -77,21 +88,23 @@ void World::loadChunks()
 {
 	const int xp = static_cast<int32_t>(player.getPosition().x);
 	const int zp = static_cast<int32_t>(player.getPosition().z);
-	const glm::ivec2 playerPos = glm::ivec2(xp >> 4, zp >> 4);
+	const glm::ivec2 playerPos(xp >> 4, zp >> 4);
 	const unsigned char renderDistance = player.getRenderDistance();
 	const int a = renderDistance * 2 + 1;
 	countChunks = a * a;
-	loadq.update(playerPos);
+	genMeshq.update(playerPos);
 	if (firstLoad)
 	{
 		for (int z = 0; z < a; ++z)
 		{
 			for (int x = 0; x < a; ++x)
 			{
-				const glm::ivec2 position{ playerPos.x - renderDistance + x, playerPos.y - renderDistance + z };
+				const glm::ivec2& position{ playerPos.x - renderDistance + x, playerPos.y - renderDistance + z };
+				dispatcher.post(ChunkNeedLoadEvent(position));
+				dispatcher.post(ChunkNeedMeshEvent(position));
+				dispatcher.post(ChunkNeedBufferEvent(position));
 				//const glm::ivec2 position{ playerPos.x + x, playerPos.y + z };
-				loadq.enqueue(position);
-				drawq.enqueue({ x, z }, false);
+				//loadq.enqueue(position);
 				/*chunks[z][x]->seed = seed;
 				if (!chunks[z][x]->loadChunk(position, worldDir))
 				{
@@ -100,11 +113,13 @@ void World::loadChunks()
 			}
 		}
 	}
-	else
+	/*else
 	{
 		glm::ivec2 deltaPos = playerPos - playerLastPosition;
 		std::vector<std::vector<Chunk*>> tmp(a, std::vector<Chunk*>(a, nullptr));
+		std::vector<std::vector<std::vector<SectionMesh*>>> tmpm(a, std::vector<std::vector<SectionMesh*>>(a, std::vector<SectionMesh*>(25, nullptr)));
 		std::vector<std::vector<bool>> tmpCheck(a, std::vector<bool>(a));
+		std::vector<std::vector<bool>> tmpCheck2(a, std::vector<bool>(a));
 		size_t minX{};
 		size_t maxX{};
 		size_t minZ{};
@@ -144,7 +159,45 @@ void World::loadChunks()
 			for (size_t x = minX; x < maxX; ++x)
 			{
 				tmp[z - deltaPos.y][x - deltaPos.x] = chunks[z][x];
+				tmpm[z - deltaPos.y][x - deltaPos.x] = sectionMesh[z][x];
 				tmpCheck[z][x] = true;
+			}
+		}
+		if (deltaPos.x >= 1)
+		{
+			minX = deltaPos.x + 1;
+			maxX = a;
+		}
+		else if (deltaPos.x <= -1)
+		{
+			minX = 0;
+			maxX = a + deltaPos.x - 1;
+		}
+		else
+		{
+			minX = 0;
+			maxX = a;
+		}
+		if (deltaPos.y >= 1)
+		{
+			minZ = deltaPos.y + 1;
+			maxZ = a;
+		}
+		else if (deltaPos.y <= -1)
+		{
+			minZ = 0;
+			maxZ = a + deltaPos.y - 1;
+		}
+		else
+		{
+			minZ = 0;
+			maxZ = a;
+		}
+		for (size_t z = minZ; z < maxZ; ++z)
+		{
+			for (size_t x = minX; x < maxX; ++x)
+			{
+				tmpCheck2[z][x] = true;
 			}
 		}
 		for (size_t z = 0; z < a; ++z)
@@ -155,18 +208,35 @@ void World::loadChunks()
 				{
 					const glm::ivec2 chunkPos(playerPos + glm::ivec2(renderDistance) - glm::ivec2(x, z));
 					tmp[a - z - 1][a - x - 1] = chunks[z][x];
+					tmpm[a - z - 1][a - x - 1] = sectionMesh[z][x];
+					for (size_t y = 0; y < 25; y++)
+					{
+						tmp[a - z - 1][a - x - 1]->sections[y].loadBuffer();
+						tmpm[a - z - 1][a - x - 1][y]->clear();
+					}
 					loadq.enqueue(chunkPos);
+				}
+				if (!tmpCheck2[z][x] && tmpCheck[z][x])
+				{
+					chunks[a - z - 1][a - x - 1]->setModified(true);
+					genMeshq.enqueue({ a - x - 1, a - z - 1 });
 				}
 			}
 		}
 		chunks = tmp;
-	}
+		sectionMesh = tmpm;
+	}*/
 	playerLastPosition = playerPos;
 }
 
 uint64_t World::getSeed() const
 {
 	return seed;
+}
+
+glm::ivec2 World::getLocalPositionChunk(const glm::ivec2& position) const
+{
+	return position - glm::ivec2(player.getPosition().x - player.getRenderDistance(), player.getPosition().z - player.getRenderDistance());
 }
 
 unsigned short World::getCountChunks()
@@ -182,261 +252,15 @@ void World::update(const float& dt)
 		updateTick();
 		tick = 0.f;
 	}
-	int x = static_cast<int32_t>(player.getPosition().x);
-	int z = static_cast<int32_t>(player.getPosition().z);
-	glm::ivec2 playerPos = glm::ivec2(x >> 4, z >> 4);
-	unsigned char renderDistance = player.getRenderDistance();
+	const int x = static_cast<int32_t>(player.getPosition().x);
+	const int z = static_cast<int32_t>(player.getPosition().z);
+	const glm::ivec2 playerPos(x >> 4, z >> 4);
+	const unsigned char renderDistance = player.getRenderDistance();
 	//drawq.update(playerPos, false);
-	int a = renderDistance * 2 + 1;
+	const int a = renderDistance * 2 + 1;
 	if (playerLastPosition != playerPos)
 		loadChunks();
-	if (loadq.count())
-	{
-		glm::ivec2 pos = loadq.dequeue();
-		glm::ivec2 startChunk = playerPos - glm::ivec2(player.getRenderDistance());
-		glm::ivec2 local = pos - startChunk;
-		glm::ivec2 regionPos = pos >> 5;
-		glm::ivec2 chunkPos = (glm::ivec2(32) + pos) % 32;
-		std::fstream region(worldDir / "region" / std::string("r." + std::to_string(regionPos.x) + "." + std::to_string(regionPos.y) + ".mca"), std::ios::in | std::ios::binary);
-		if (regions.contains(regionPos))
-		{
-			if (region.is_open())
-			{
-				regions[regionPos].deserialize(region, chunkPos.x, chunkPos.y);
-			}
-		}
-		else
-		{
-			if (region.is_open())
-			{
-				regions[regionPos].readLT(region);
-				regions[regionPos].deserialize(region, chunkPos.x, chunkPos.y);
-			}
-		}
-		region.close();
-		if ((local.x >= 0 && local.x < a) && (local.y >= 0 && local.y < a) && !chunks[local.y][local.x]->work.load())
-		{
-			nbt::NBT chunk = regions[regionPos].chunks[chunkPos.y * 32 + chunkPos.x];
-			chunks[local.y][local.x]->work.store(true);
-			nbt::TagCompound& heightMaps = chunk.at<nbt::TagCompound>("Heightmaps");
-			chunks[local.y][local.x]->motion_blocking = heightMaps.at<nbt::TagLongArray>("MOTION_BLOCKING");
-			chunks[local.y][local.x]->motion_blocking_no_leaves = heightMaps.at<nbt::TagLongArray>("MOTION_BLOCKING_NO_LEAVES");
-			chunks[local.y][local.x]->ocean_floor = heightMaps.at<nbt::TagLongArray>("OCEAN_FLOOR");
-			chunks[local.y][local.x]->world_surface = heightMaps.at<nbt::TagLongArray>("WORLD_SURFACE");
-			chunks[local.y][local.x]->position.x = chunk.at<nbt::TagInt>("xPos");
-			chunks[local.y][local.x]->position.y = chunk.at<nbt::TagInt>("yPos");
-			chunks[local.y][local.x]->position.z = chunk.at<nbt::TagInt>("zPos");
-			chunks[local.y][local.x]->localPosition = local;
-			std::vector<nbt::TagCompound>& sections = nbt::get_list<nbt::TagCompound>(chunk.at<nbt::TagList>("sections"));
-			chunks[local.y][local.x]->sectionCount = sections.size();
-			for (size_t i = 0; i < sections.size(); ++i)
-			{
-				chunks[local.y][local.x]->sections[i].work.store(true);
-				if (sections[i].base.contains("BlockLight"))
-					chunks[local.y][local.x]->sections[i].blockLight = sections[i].at<nbt::TagByteArray>("BlockLight");
-				else
-					chunks[local.y][local.x]->sections[i].blockLight = std::vector<int8_t>(2048, 0);
-				if (sections[i].base.contains("SkyLight"))
-					chunks[local.y][local.x]->sections[i].skyLight = sections[i].at<nbt::TagByteArray>("SkyLight");
-				else
-					chunks[local.y][local.x]->sections[i].skyLight = std::vector<int8_t>(2048, 0);
-				{
-					int h = sections[i].at<nbt::TagByte>("Y");
-					chunks[local.y][local.x]->sections[i].position = { pos.x, h, pos.y };
-				}
-				nbt::TagCompound& blockStates = sections[i].at<nbt::TagCompound>("block_states");
-				nbt::TagCompound& biomes = sections[i].at<nbt::TagCompound>("biomes");
-				if (blockStates.base.contains("data"))
-				{
-					chunks[local.y][local.x]->sections[i].dataBlock = blockStates.at<nbt::TagLongArray>("data");
-				}
-				else
-				{
-					chunks[local.y][local.x]->sections[i].dataBlock = std::vector<int64_t>(256, 0);
-				}
-				if (biomes.base.contains("data"))
-				{
-					chunks[local.y][local.x]->sections[i].dataBiome = biomes.at<nbt::TagLongArray>("data");
-				}
-				else
-				{
-					chunks[local.y][local.x]->sections[i].dataBiome = std::vector<int64_t>(1, 0);
-				}
-				
-				std::vector<nbt::TagCompound>& blockPalette = nbt::get_list<nbt::TagCompound>(blockStates.at<nbt::TagList>("palette"));
-				std::vector<nbt::TagString>& biomePalette = nbt::get_list<nbt::TagString>(biomes.at<nbt::TagList>("palette"));
-				chunks[local.y][local.x]->sections[i].blockPalette.resize(blockPalette.size());
-				chunks[local.y][local.x]->sections[i].biomePalette.resize(biomePalette.size());
-				const int8_t bitsPerBlock = std::max(4, static_cast<int>(std::ceilf(std::log2f(static_cast<float>(blockPalette.size())))));
-				const int8_t bitsPerBiome = std::max(1, static_cast<int>(std::ceilf(std::log2f(static_cast<float>(biomePalette.size())))));
-				chunks[local.y][local.x]->sections[i].bitsPerBlock = bitsPerBlock;
-				chunks[local.y][local.x]->sections[i].bitsPerBiome = bitsPerBiome;
-				chunks[local.y][local.x]->sections[i].countIndexPerLongBlock = 64u / bitsPerBlock;
-				chunks[local.y][local.x]->sections[i].countIndexPerLongBiome = 64u / bitsPerBiome;
-				chunks[local.y][local.x]->sections[i].maskBlock = (1ull << bitsPerBlock) - 1ull;
-				chunks[local.y][local.x]->sections[i].maskBiome = (1ull << bitsPerBiome) - 1ull;
 
-				for (size_t j = 0; j < biomePalette.size(); ++j)
-				{
-					chunks[local.y][local.x]->sections[i].biomePalette[j] = Enums::iBiome(biomePalette[j].substr(10));
-				}
-				for (size_t j = 0; j < blockPalette.size(); ++j)
-				{
-					std::string pkey = blockPalette[j].at<nbt::TagString>("Name").substr(10);
-					chunks[local.y][local.x]->sections[i].blockPalette[j].id = Enums::iBlock(pkey);
-					if (blockPalette[j].base.contains("Properties"))
-					{
-						for (auto& [key, value] : blockPalette[j].at<nbt::TagCompound>("Properties").base)
-						{
-							std::string nameProp = key;
-							Enums::PropertiesBlock propBlock = Enums::iPropertiesBlock(nameProp);
-							nameProp = std::get<nbt::TagString>(value);
-							uint8_t value{};
-							if (static_cast<size_t>(propBlock) > 20)
-							{
-								if (nameProp == "true")
-									value = 1;
-								else if (nameProp == "false")
-									value = 0;
-								else
-									value = std::stoi(nameProp);
-							}
-							else
-							{
-								switch (propBlock)
-								{
-								case Enums::PropertiesBlock::ATTACHMENT:
-									value = static_cast<uint8_t>(Enums::iAttachment(nameProp));
-									break;
-								case Enums::PropertiesBlock::AXIS:
-									value = static_cast<uint8_t>(Enums::iAxis(nameProp));
-									break;
-								case Enums::PropertiesBlock::EAST:
-									if (nameProp == "true")
-										value = 1;
-									else if (nameProp == "false")
-										value = 0;
-									else
-										value = static_cast<uint8_t>(Enums::iEast(nameProp));
-									break;
-								case Enums::PropertiesBlock::FACE:
-									value = static_cast<uint8_t>(Enums::iFace(nameProp));
-									break;
-								case Enums::PropertiesBlock::FACING:
-									value = static_cast<uint8_t>(Enums::iFacing(nameProp));
-									break;
-								case Enums::PropertiesBlock::HALF:
-									value = static_cast<uint8_t>(Enums::iHalf(nameProp));
-									break;
-								case Enums::PropertiesBlock::HINGE:
-									value = static_cast<uint8_t>(Enums::iHinge(nameProp));
-									break;
-								case Enums::PropertiesBlock::INSTRUMENT:
-									value = static_cast<uint8_t>(Enums::iInstrument(nameProp));
-									break;
-								case Enums::PropertiesBlock::LEAVES:
-									value = static_cast<uint8_t>(Enums::iLeaves(nameProp));
-									break;
-								case Enums::PropertiesBlock::NORTH:
-									if (nameProp == "true")
-										value = 1;
-									else if (nameProp == "false")
-										value = 0;
-									else
-										value = static_cast<uint8_t>(Enums::iNorth(nameProp));
-									break;
-								case Enums::PropertiesBlock::MODE:
-									value = static_cast<uint8_t>(Enums::iMode(nameProp));
-									break;
-								case Enums::PropertiesBlock::ORIENTATION:
-									value = static_cast<uint8_t>(Enums::iOrientation(nameProp));
-									break;
-								case Enums::PropertiesBlock::PART:
-									value = static_cast<uint8_t>(Enums::iPart(nameProp));
-									break;
-								case Enums::PropertiesBlock::SCULK_SENSOR_PHASE:
-									value = static_cast<uint8_t>(Enums::iSculkSensorPhase(nameProp));
-									break;
-								case Enums::PropertiesBlock::SHAPE:
-									value = static_cast<uint8_t>(Enums::iShape(nameProp));
-									break;
-								case Enums::PropertiesBlock::SOUTH:
-									if (nameProp == "true")
-										value = 1;
-									else if (nameProp == "false")
-										value = 0;
-									else
-										value = static_cast<uint8_t>(Enums::iSouth(nameProp));
-									break;
-								case Enums::PropertiesBlock::THICKNESS:
-									value = static_cast<uint8_t>(Enums::iThickness(nameProp));
-									break;
-								case Enums::PropertiesBlock::TILT:
-									value = static_cast<uint8_t>(Enums::iTilt(nameProp));
-									break;
-								case Enums::PropertiesBlock::TYPE:
-									value = static_cast<uint8_t>(Enums::iType(nameProp));
-									break;
-								case Enums::PropertiesBlock::VERTICAL_DIRECTION:
-									value = static_cast<uint8_t>(Enums::iVerticalDirection(nameProp));
-									break;
-								case Enums::PropertiesBlock::WEST:
-									if (nameProp == "true")
-										value = 1;
-									else if (nameProp == "false")
-										value = 0;
-									else
-										value = static_cast<uint8_t>(Enums::iWest(nameProp));
-									break;
-								default:
-									break;
-								}
-							}
-							chunks[local.y][local.x]->sections[i].blockPalette[j].properties.insert({ propBlock, value });
-						}
-					}
-				}
-				chunks[local.y][local.x]->sections[i].work.store(false);
-			}
-			//if (!chunks[local.y][local.x]->loadChunk(pos, worldDir))
-			//{
-			//	//poolChunks.enqueue(std::bind(&Chunk::generateChunk, chunks[local.y][local.x], pos, seed));
-			//	
-			//}
-			//chunks[local.y][local.x]->findNeighbors();
-			chunks[local.y][local.x]->modified.store(true);
-			chunks[local.y][local.x]->work.store(false);
-			if ((local.x >= 0 && local.x < a) && (local.y - 1 >= 0 && local.y - 1 < a))
-			{
-				//chunks[local.y - 1][local.x]->findNeighbors();
-				chunks[local.y - 1][local.x]->modified.store(true);
-				//chunks[local.y - 1][local.x]->genMesh();
-			}
-			if ((local.x >= 0 && local.x < a) && (local.y + 1 >= 0 && local.y + 1 < a))
-			{
-				//chunks[local.y + 1][local.x]->findNeighbors();
-				chunks[local.y + 1][local.x]->modified.store(true);
-				//chunks[local.y + 1][local.x]->genMesh();
-			}
-			if ((local.x - 1 >= 0 && local.x - 1 < a) && (local.y >= 0 && local.y < a))
-			{
-				//chunks[local.y][local.x - 1]->findNeighbors();
-				chunks[local.y][local.x - 1]->modified.store(true);
-				//chunks[local.y][local.x - 1]->genMesh();
-			}
-			if ((local.x + 1 >= 0 && local.x + 1 < a) && (local.y >= 0 && local.y < a))
-			{
-				//chunks[local.y][local.x + 1]->findNeighbors();
-				chunks[local.y][local.x + 1]->modified.store(true);
-				//chunks[local.y][local.x + 1]->genMesh();
-			}
-			//chunks[local.y][local.x]->genMesh();
-		}
-		if ((local.x >= 0 && local.x < a) && (local.y >= 0 && local.y < a) && chunks[local.y][local.x]->work.load())
-		{
-			loadq.enqueue(pos);
-		}
-	}
 	if (player.fly)
 	{
 		if (ImGui::IsKeyDown(GLFW_KEY_W))
@@ -456,6 +280,7 @@ void World::update(const float& dt)
 			player.move(player.getRight() * -player.speed * 4.f * dt);
 		}
 	}
+	dispatcher.process();
 }
 
 void World::updateTick()
@@ -470,37 +295,158 @@ void World::draw()
 	countVertex = 0;
 	countVertexTransperent = 0;
 	countVisibleSection = 0;
-	queuep ddrawq = drawq;
-	//glEnable(GL_BLEND);
-	glDisable(GL_BLEND);
+	if (genMeshq.count())
+	{
+		const glm::ivec2& local = genMeshq.dequeue();
+		if (chunks[local.y][local.x]->isModified() && !chunks[local.y][local.x]->isWork() && loadedNeighbours(local))
+		{
+			for (size_t i = 1; i < chunks[local.y][local.x]->sectionCount; i++)
+			{
+				chunks[local.y][local.x]->sections[i].floodfill();
+			}
+		}
+		else
+		{
+			genMeshq.enqueue(local);
+		}
+	}
 	for (size_t z = 0; z < chunks.size(); ++z)
 	{
 		for (size_t x = 0; x < chunks.size(); ++x)
 		{
-			if (chunks[z][x]->modified.load() && !chunks[z][x]->work.load())
+			for (size_t y = 1; y < chunks[z][x]->sectionCount; y++)
 			{
-				chunks[z][x]->modified.store(false);
-				chunks[z][x]->work.store(true);
-				poolChunks.enqueue(std::bind(&Chunk::genMesh, chunks[z][x]));
-				//chunks[z][x]->genMesh();
-			}
-			for (size_t y = 0; y < 24; y++)
-			{
-				if (y < chunks[z][x]->sections.size())
+				Section& section = chunks[z][x]->sections[y];
+				if (section.buffer.load() && !section.work.load())
 				{
-					Section& section = chunks[z][x]->sections[y];
-					if (section.buffer.load())
-					{
-						sectionMesh[z][x][y].load(section.vertex, section.color, section.UV, section.AO, section.indicies);
-						sectionMesh[z][x][y].position = section.position;
-						section.loadBuffer();
-					}
-					const int f = camera.getFrustum().CubeInFrustum(glm::vec3(sectionMesh[z][x][y].position) * 16.f + 8.f, glm::vec3(8));
-					if (f == Frustum::FRUSTUM_INTERSECT || f == Frustum::FRUSTUM_INSIDE)
-						sectionMesh[z][x][y].draw();
+					sectionMesh[z][x][y]->load(section.vertex, section.color, section.UV, section.AO, section.indicies);
+					sectionMesh[z][x][y]->position = section.position;
+					section.loadBuffer();
 				}
-				else
-					sectionMesh[z][x][y].clear();
+				/*const int f = camera.getFrustum().CubeInFrustum(glm::vec3(sectionMesh[z][x][y]->position) * 16.f + 8.f, glm::vec3(8));
+				if (f == Frustum::FRUSTUM_INTERSECT || f == Frustum::FRUSTUM_INSIDE)
+				{
+					sectionMesh[z][x][y]->draw();
+					if (sectionMesh[z][x][y]->getCountVertex())
+					{
+						countVertex += sectionMesh[z][x][y]->getCountVertex();
+						countVisibleSection++;
+					}
+				}*/
+			}
+		}
+	}
+	const int xp = static_cast<int32_t>(player.getPosition().x);
+	const int yp = static_cast<int32_t>(player.getPosition().y);
+	const int zp = static_cast<int32_t>(player.getPosition().z);
+	const glm::ivec3 playerPos(xp >> 4, yp >> 4, zp >> 4);
+	const int a = player.getRenderDistance() * 2 + 1;
+	glm::ivec3 startSection(playerPos.x - player.getRenderDistance(), 0, playerPos.z - player.getRenderDistance());
+	glm::ivec3 local = playerPos - glm::ivec3(startSection.x, -5, startSection.z);
+	std::queue<std::tuple<glm::ivec3, Enums::Culling, std::vector<bool>>> sCull;
+	std::queue<glm::ivec3> sCullR;
+	std::vector<std::vector<std::vector<bool>>> sv(a, std::vector<std::vector<bool>>(a, std::vector<bool>(26, false)));
+	auto norm = [&](Enums::Direction d) -> bool { return glm::dot(glm::vec3(Enums::getVecFacing(d)), camera.getLook()) < 0; };
+	sCull.push({ playerPos, static_cast<Enums::Culling>(-1), {0,0,0,0,0,0} });
+	sv[local.z][local.x][local.y] = true;
+	if (ImGui::IsKeyReleased(GLFW_KEY_KP_1))
+	{
+		Section* s = getSection(playerPos);
+		s->floodfill();
+	}
+	Enums::Culling oppositeFace[6]
+	{
+		Enums::Culling::WEST,
+		Enums::Culling::EAST,
+		Enums::Culling::DOWN,
+		Enums::Culling::UP,
+		Enums::Culling::NORTH,
+		Enums::Culling::SOUTH
+	};
+	while (!sCull.empty())
+	{
+		const std::tuple<glm::ivec3, Enums::Culling, std::vector<bool>> top = sCull.front();
+		const glm::ivec3& pos = std::get<0>(top);
+		Section* section = getSection(pos);
+		if (section)
+		{
+			auto visit = [&](int z, int x, int y, Enums::Culling c) -> bool
+			{
+				std::vector<bool> dir = std::get<2>(top);
+				if (dir[static_cast<int>(oppositeFace[static_cast<int>(c)])])
+					return false;
+				Section* sec = getSection({ x, y, z });
+				if (!sec)
+					return false;
+				int lz = z - startSection.z;
+				int ly = y + 5;
+				int lx = x - startSection.x;
+				if (ly < 0)
+					return false;
+				if (sv[lz][lx][ly])
+					return false;
+				if (static_cast<int>(std::get<1>(top)) != -1)
+				{
+					if (section && !section->flood[static_cast<int>(std::get<1>(top))][static_cast<int>(c)])
+						return false;
+				}
+				sv[lz][lx][ly] = true;
+
+				dir[static_cast<int>(c)] = 1;
+				sCull.push({ {x, y, z}, oppositeFace[static_cast<int>(c)], dir });
+				return true;
+			};
+
+			visit(pos.z, pos.x + 1, pos.y, Enums::Culling::WEST);
+			visit(pos.z, pos.x - 1, pos.y, Enums::Culling::EAST);
+			visit(pos.z, pos.x, pos.y + 1, Enums::Culling::DOWN);
+			visit(pos.z, pos.x, pos.y - 1, Enums::Culling::UP);
+			visit(pos.z + 1, pos.x, pos.y, Enums::Culling::NORTH);
+			visit(pos.z - 1, pos.x, pos.y, Enums::Culling::SOUTH);
+		}
+		sCull.pop();
+	}
+	/*while (!sCullR.empty())
+	{
+		const glm::ivec3& pos = sCullR.front();
+		const int xp = static_cast<int32_t>(player.getPosition().x);
+		const int yp = static_cast<int32_t>(player.getPosition().y);
+		const int zp = static_cast<int32_t>(player.getPosition().z);
+		const glm::ivec3 playerPos(xp >> 4, yp >> 4, zp >> 4);
+		const int a = player.getRenderDistance() * 2 + 1;
+		const glm::ivec3 startSection = playerPos - glm::ivec3(player.getRenderDistance(), 0, player.getRenderDistance());
+		const glm::ivec3 local = pos - glm::ivec3(startSection.x, -4, startSection.z);
+		const int f = camera.getFrustum().CubeInFrustum(glm::vec3(sectionMesh[local.z][local.x][local.y]->position) * 16.f + 8.f, glm::vec3(8));
+		if (true)
+		{
+			sectionMesh[local.z][local.x][local.y]->draw();
+			if (sectionMesh[local.z][local.x][local.y]->getCountVertex())
+			{
+				countVertex += sectionMesh[local.z][local.x][local.y]->getCountVertex();
+				countVisibleSection++;
+			}
+		}
+		sCullR.pop();
+	}*/
+	for (size_t z = 0; z < chunks.size(); ++z)
+	{
+		for (size_t x = 0; x < chunks.size(); ++x)
+		{
+			for (size_t y = 1; y < chunks[z][x]->sectionCount; y++)
+			{
+				if (sv[z][x][y])
+				{
+					const int f = camera.getFrustum().CubeInFrustum(glm::vec3(sectionMesh[z][x][y]->position) * 16.f + 8.f, glm::vec3(8));
+					if (true)
+					{
+						sectionMesh[z][x][y]->draw();
+						if (sectionMesh[z][x][y]->getCountVertex())
+						{
+							countVertex += sectionMesh[z][x][y]->getCountVertex();
+							countVisibleSection++;
+						}
+					}
+				}
 			}
 		}
 	}
@@ -522,9 +468,23 @@ void World::draw()
 	allVertex = countVertex + countVertexTransperent;
 }
 
-bool World::validateLocalPosChunk(const glm::ivec2& position)
+bool World::validateLocalPosChunk(const glm::ivec2& position) const
 {
 	return !(position.x < 0 || position.y < 0 || position.x > endLocalPosChunk.x || position.y > endLocalPosChunk.y);
+}
+
+bool World::loadedNeighbours(const glm::ivec2& position)
+{
+	bool f{ true };
+	if (validateLocalPosChunk(glm::ivec2(position.x + 1, position.y)))
+		f &= chunks[position.y][position.x + 1]->state.load() == State::Loaded;
+	if (validateLocalPosChunk(glm::ivec2(position.x - 1, position.y)))
+		f &= chunks[position.y][position.x - 1]->state.load() == State::Loaded;
+	if (validateLocalPosChunk(glm::ivec2(position.x, position.y + 1)))
+		f &= chunks[position.y + 1][position.x]->state.load() == State::Loaded;
+	if (validateLocalPosChunk(glm::ivec2(position.x, position.y - 1)))
+		f &= chunks[position.y - 1][position.x]->state.load() == State::Loaded;
+	return f;
 }
 
 std::string World::rayCast(const glm::vec3& pos, const glm::vec3& dir, float maxDist, glm::vec3& end, glm::vec3& norm, glm::vec3& iend)

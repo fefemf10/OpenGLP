@@ -35,6 +35,7 @@ namespace Enums
 		ALL,
 		TEXTURE,
 		PARTICLE,
+		OVERLAY,
 		END,
 		BOTTOM,
 		TOP,
@@ -77,6 +78,7 @@ namespace Enums
 		"all",
 		"texture",
 		"particle",
+		"overlay",
 		"end",
 		"bottom",
 		"top",
@@ -115,7 +117,7 @@ namespace Enums
 	};
 	constexpr TextureSlot iTextureSlot(std::string_view s)
 	{
-		for (uint8_t i = 0; i < 39; ++i)
+		for (uint8_t i = 0; i < 40; ++i)
 		{
 			if (sTextureSlot[i] == s)
 				return static_cast<TextureSlot>(i);

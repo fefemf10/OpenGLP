@@ -30,6 +30,7 @@ namespace nbt
 		uint32_t getChunkTimestamp(int32_t x, int32_t z) const;
 		uint32_t locations[1024]{};
 		uint32_t timestamps[1024]{};
+		bool deserialized[32][32]{};
 		std::vector<NBT> chunks;
 	};
 }

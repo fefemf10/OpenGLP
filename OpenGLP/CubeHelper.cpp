@@ -2,7 +2,7 @@
 #include "World.hpp"
 
 
-CubeHelper::CubeHelper(Section& section, const PaletteItem& pi, const glm::ivec3& position, const glm::vec3& colorBlock, const glm::ivec3& localPos, const glm::vec2& rotation, const Blocks::Model::Element& item, uint32_t countVertex, const TextureAtlas& atlas, const std::map<Enums::TextureSlot, GLuint>& textures) : section(section), pi(pi), position(position), colorBlock(colorBlock), localPos(localPos), countVertex(countVertex), item(item), atlas(atlas), textures(textures)
+CubeHelper::CubeHelper(Section& section, const std::array<std::array<std::array<bool, 3>, 3>, 3>& nBlocks, const glm::ivec3& position, const glm::vec3& colorBlock, const glm::ivec3& localPos, const glm::vec2& rotation, const Blocks::Model::Element& item, uint32_t countVertex, const std::map<Enums::TextureSlot, GLuint>& textures) : section(section), nBlocks(nBlocks), position(position), colorBlock(colorBlock), localPos(localPos), countVertex(countVertex), item(item), textures(textures)
 {
 	/*auto addQuad = [&](Enums::Direction d, const std::array<std::array<glm::vec3, 4>, 6>& cube, const std::map<Enums::Direction, Blocks::Model::Element::Face>& ifaces,
 		const std::unordered_map<std::string, std::string>& textures, const glm::vec3& colorFloat, float lightFactor,
@@ -105,76 +105,16 @@ CubeHelper::CubeHelper(Section& section, const PaletteItem& pi, const glm::ivec3
 		{ cube[0], cube[1], cube[2], cube[3] },
 		{ cube[7], cube[6], cube[5], cube[4] }
 	};
-	nBlocks = 
-	{
-		std::array<std::array<bool, 3>, 3>
-		{
-			std::array<bool, 3>
-			{
-				Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(-1, -1, -1)).id)].material)].solid,
-					Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(0, -1, -1)).id)].material)].solid,
-					Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(1, -1, -1)).id)].material)].solid
-			},
-			{
-				Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(-1, -1, 0)).id)].material)].solid,
-				Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(0, -1, 0)).id)].material)].solid,
-				Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(1, -1, 0)).id)].material)].solid
-			},
-			{
-				Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(-1, -1, 1)).id)].material)].solid,
-				Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(0, -1, 1)).id)].material)].solid,
-				Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(1, -1, 1)).id)].material)].solid
-			}
-		},
-		{
-			std::array<bool, 3>
-			{
-				Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(-1, 0, -1)).id)].material)].solid,
-				Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(0, 0, -1)).id)].material)].solid,
-				Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(1, 0, -1)).id)].material)].solid
-			},
-			{
-				Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(-1, 0, 0)).id)].material)].solid,
-				Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(0, 0, 0)).id)].material)].solid,
-				Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(1, 0, 0)).id)].material)].solid
-			},
-			{
-				Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(-1, 0, 1)).id)].material)].solid,
-				Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(0, 0, 1)).id)].material)].solid,
-				Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(1, 0, 1)).id)].material)].solid
-			}
-		},
-		{
-			std::array<bool, 3>
-			{
-				Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(-1, 1, -1)).id)].material)].solid,
-				Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(0, 1, -1)).id)].material)].solid,
-				Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(1, 1, -1)).id)].material)].solid
-			},
-			{
-				Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(-1, 1, 0)).id)].material)].solid,
-				Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(0, 1, 0)).id)].material)].solid,
-				Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(1, 1, 0)).id)].material)].solid
-			},
-			{
-				Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(-1, 1, 1)).id)].material)].solid,
-				Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(0, 1, 1)).id)].material)].solid,
-				Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(section.getBlock(localPos + glm::ivec3(1, 1, 1)).id)].material)].solid
-			}
-		}
-	};
 }
-void CubeHelper::addQuad(const Enums::Direction d)
+void CubeHelper::addQuad(const Enums::Direction d, Enums::Block piid, Enums::Block id, bool solidBlocking)
 {
-	const PaletteItem& pi{ section.getBlock(localPos + Enums::getVecFacing(d)) };
 	if (item.faces.contains(d))
 	{
 		const Blocks::Model::Element::Face& f = item.faces.at(d);
 		const unsigned int texture = textures.at(f.texture);
 		if (f.cullface == d)
 		{
-			const Material& pim = Blocks::blockMaterials[static_cast<size_t>(Blocks::blocks[static_cast<size_t>(pi.id)].material)];
-			if (this->pi.id != pi.id && !pim.solidBlocking)
+			if (piid != id && !solidBlocking)
 			{
 				vertexPush(cubefaces[static_cast<size_t>(std::log2f(static_cast<float>(d)))]);
 				if (f.tintindex)
@@ -320,6 +260,41 @@ void CubeHelper::rotateFunc(const glm::vec4& uv, int angle, GLuint texture)
 }
 
 void CubeHelper::rotateCube(const Enums::Axis& axis, const float& angle, const glm::vec3& origin)
+{
+	glm::mat4 rot(1.f);
+	cube[0] -= origin;
+	cube[1] -= origin;
+	cube[2] -= origin;
+	cube[3] -= origin;
+	cube[4] -= origin;
+	cube[5] -= origin;
+	cube[6] -= origin;
+	cube[7] -= origin;
+	if (axis == Enums::Axis::X)
+		rot = glm::rotate(rot, glm::radians(angle), glm::vec3(1.f, 0.f, 0.f));
+	else if (axis == Enums::Axis::Y)
+		rot = glm::rotate(rot, glm::radians(angle), glm::vec3(0.f, 1.f, 0.f));
+	else if (axis == Enums::Axis::Z)
+		rot = glm::rotate(rot, glm::radians(angle), glm::vec3(0.f, 0.f, 1.f));
+	cube[0] = static_cast<glm::vec3>(glm::vec4(cube[0], 1.f) * rot);
+	cube[1] = static_cast<glm::vec3>(glm::vec4(cube[1], 1.f) * rot);
+	cube[2] = static_cast<glm::vec3>(glm::vec4(cube[2], 1.f) * rot);
+	cube[3] = static_cast<glm::vec3>(glm::vec4(cube[3], 1.f) * rot);
+	cube[4] = static_cast<glm::vec3>(glm::vec4(cube[4], 1.f) * rot);
+	cube[5] = static_cast<glm::vec3>(glm::vec4(cube[5], 1.f) * rot);
+	cube[6] = static_cast<glm::vec3>(glm::vec4(cube[6], 1.f) * rot);
+	cube[7] = static_cast<glm::vec3>(glm::vec4(cube[7], 1.f) * rot);
+	cube[0] += origin;
+	cube[1] += origin;
+	cube[2] += origin;
+	cube[3] += origin;
+	cube[4] += origin;
+	cube[5] += origin;
+	cube[6] += origin;
+	cube[7] += origin;
+}
+
+void CubeHelper::rotateCube(std::array<glm::vec3, 8>& cube, const Enums::Axis& axis, const float& angle, const glm::vec3& origin)
 {
 	glm::mat4 rot(1.f);
 	cube[0] -= origin;

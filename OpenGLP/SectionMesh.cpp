@@ -2,16 +2,31 @@
 
 SectionMesh::SectionMesh()
 {
+	
+}
+
+void SectionMesh::init()
+{
+	vao.addVAO();
+	//vaot.addVAO();
 	vao.addVBO(4);
-	vaot.addVBO(4);
-	vao.setPropertyBuffer(0, 3, GL_FLOAT);
-	vao.setPropertyBuffer(1, 3, GL_FLOAT);
-	vao.setPropertyBuffer(2, 3, GL_FLOAT);
-	vao.setPropertyBuffer(3, 1, GL_UNSIGNED_BYTE);
-	vaot.setPropertyBuffer(0, 3, GL_FLOAT);
-	vaot.setPropertyBuffer(1, 3, GL_FLOAT);
-	vaot.setPropertyBuffer(2, 3, GL_FLOAT);
-	vaot.setPropertyBuffer(3, 1, GL_UNSIGNED_BYTE);
+	//vaot.addVBO(4);
+	vao[0].attibSize = 3;
+	vao[0].attibType = GL_FLOAT;
+	vao[1].attibSize = 3;
+	vao[1].attibType = GL_FLOAT;
+	vao[2].attibSize = 3;
+	vao[2].attibType = GL_FLOAT;
+	vao[3].attibSize = 1;
+	vao[3].attibType = GL_UNSIGNED_BYTE;
+	/*vaot[0].attibSize = 3;
+	vaot[0].attibType = GL_FLOAT;
+	vaot[1].attibSize = 3;
+	vaot[1].attibType = GL_FLOAT;
+	vaot[2].attibSize = 3;
+	vaot[2].attibType = GL_FLOAT;
+	vaot[3].attibSize = 1;
+	vaot[3].attibType = GL_UNSIGNED_BYTE;*/
 }
 
 void SectionMesh::load(const std::vector<glm::vec3>& vertex, const std::vector<glm::vec3>& color, const std::vector<glm::vec3>& UV, const std::vector<uint8_t>& AO, const std::vector<GLuint>& indicies, bool t)
@@ -25,7 +40,7 @@ void SectionMesh::load(const std::vector<glm::vec3>& vertex, const std::vector<g
 		vao.loadIndices(indicies);
 		countVertex = vertex.size();
 	}
-	else
+	/*else
 	{
 		vaot.loadData(0, vertex);
 		vaot.loadData(1, color);
@@ -33,15 +48,13 @@ void SectionMesh::load(const std::vector<glm::vec3>& vertex, const std::vector<g
 		vaot.loadData(3, AO);
 		vaot.loadIndices(indicies);
 		countVertext = vertex.size();
-	}
+	}*/
 }
 
 void SectionMesh::clear()
 {
 	countVertex = 0;
 	countVertext = 0;
-	vao.clear();
-	vaot.clear();
 }
 
 void SectionMesh::draw() const

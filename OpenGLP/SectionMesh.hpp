@@ -4,6 +4,8 @@ class SectionMesh
 {
 public:
 	SectionMesh();
+	SectionMesh(const SectionMesh& other) = default;
+	void init();
 	void load(const std::vector<glm::vec3>& vertex, const std::vector<glm::vec3>& color, const std::vector<glm::vec3>& UV, const std::vector<uint8_t>& AO, const std::vector<GLuint>& indicies, bool t = false);
 	void clear();
 	void draw() const;

@@ -1,5 +1,4 @@
 #pragma once
-#include <optional>
 #include <string>
 #include <GLM/vec3.hpp>
 #include <JSON/json.hpp>
@@ -14,7 +13,7 @@ struct Material
 		REPLACE,
 		BLOCKED
 	};
-	std::optional<glm::u8vec3> mapColor;
+	//std::optional<glm::u8vec3> mapColor;
 	bool liquid{};
 	bool solid{};
 	bool solidBlocking{};
@@ -27,8 +26,8 @@ struct Material
 
 inline void to_json(nlohmann::json& j, const Material& material)
 {
-	if (material.mapColor)
-		j["map_color"] = material.mapColor.value();
+	/*if (material.mapColor)
+		j["map_color"] = material.mapColor.value();*/
 	j["liquid"] = material.liquid;
 	j["solid"] = material.solid;
 	j["solid_blocking"] = material.solidBlocking;
@@ -40,11 +39,11 @@ inline void to_json(nlohmann::json& j, const Material& material)
 
 inline void from_json(const nlohmann::json& j, Material& material)
 {
-	if (j.contains("map_color"))
+	/*if (j.contains("map_color"))
 	{
 		material.mapColor = glm::u8vec3();
 		j.at("map_color").get_to(material.mapColor.value());
-	}
+	}*/
 	j.at("liquid").get_to(material.liquid);
 	j.at("solid").get_to(material.solid);
 	j.at("solid_blocking").get_to(material.solidBlocking);

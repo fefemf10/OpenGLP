@@ -252,6 +252,69 @@ namespace Enums
 		SOUTH = 0x10,
 		NORTH = 0x20
 	};
+	/*enum class Culling : unsigned short
+	{
+		EW,
+		EU,
+		ED,
+		ES,
+		EN,
+		WU,
+		WD,
+		WS,
+		WN,
+		UD,
+		US,
+		UN,
+		DS,
+		DN,
+		SN,
+	};*/
+	enum class Culling : short
+	{
+		EAST,
+		WEST,
+		UP,
+		DOWN,
+		SOUTH,
+		NORTH
+	};
+	constexpr Direction getFaceCull(Culling c)
+	{
+		switch (c)
+		{
+		case Enums::Culling::EAST:
+			return Enums::Direction::EAST;
+		case Enums::Culling::WEST:
+			return Enums::Direction::WEST;
+		case Enums::Culling::UP:
+			return Enums::Direction::UP;
+		case Enums::Culling::DOWN:
+			return Enums::Direction::DOWN;
+		case Enums::Culling::SOUTH:
+			return Enums::Direction::SOUTH;
+		case Enums::Culling::NORTH:
+			return Enums::Direction::NORTH;
+		}
+	}
+	constexpr Culling getCullFace(Direction d)
+	{
+		switch (d)
+		{
+		case Enums::Direction::EAST:
+			return Enums::Culling::EAST;
+		case Enums::Direction::WEST:
+			return Enums::Culling::WEST;
+		case Enums::Direction::UP:
+			return Enums::Culling::UP;
+		case Enums::Direction::DOWN:
+			return Enums::Culling::DOWN;
+		case Enums::Direction::SOUTH:
+			return Enums::Culling::SOUTH;
+		case Enums::Direction::NORTH:
+			return Enums::Culling::NORTH;
+		}
+	}
 	constexpr const char* sFacing[] =
 	{
 		"east",
@@ -288,6 +351,22 @@ namespace Enums
 			return glm::ivec3(0, 0, -1);
 		}
 		return glm::ivec3();
+	}
+	constexpr Direction getFacingVec(glm::ivec3 d)
+	{
+		if (glm::ivec3(1, 0, 0) == d)
+			return Enums::Direction::EAST;
+		else if (glm::ivec3(-1, 0, 0) == d)
+			return Enums::Direction::WEST;
+		else if (glm::ivec3(0, 1, 0) == d)
+			return Enums::Direction::UP;
+		else if (glm::ivec3(0, -1, 0) == d)
+			return Enums::Direction::DOWN;
+		else if (glm::ivec3(0, 0, 1) == d)
+			return Enums::Direction::SOUTH;
+		else if (glm::ivec3(0, 0, -1) == d)
+			return Enums::Direction::NORTH;
+		return static_cast<Direction>(0);
 	}
 	enum class Half : unsigned char
 	{
