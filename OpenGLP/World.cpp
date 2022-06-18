@@ -100,9 +100,9 @@ void World::loadChunks()
 			for (int x = 0; x < a; ++x)
 			{
 				const glm::ivec2& position{ playerPos.x - renderDistance + x, playerPos.y - renderDistance + z };
-				dispatcher.post(ChunkNeedLoadEvent(position));
-				dispatcher.post(ChunkNeedMeshEvent(position));
-				dispatcher.post(ChunkNeedBufferEvent(position));
+				dispatcher.post(new ChunkNeedLoadEvent(position));
+				dispatcher.post(new ChunkNeedMeshEvent(position));
+				dispatcher.post(new ChunkNeedBufferEvent(position));
 				//const glm::ivec2 position{ playerPos.x + x, playerPos.y + z };
 				//loadq.enqueue(position);
 				/*chunks[z][x]->seed = seed;
@@ -295,47 +295,32 @@ void World::draw()
 	countVertex = 0;
 	countVertexTransperent = 0;
 	countVisibleSection = 0;
-	if (genMeshq.count())
-	{
-		const glm::ivec2& local = genMeshq.dequeue();
-		if (chunks[local.y][local.x]->isModified() && !chunks[local.y][local.x]->isWork() && loadedNeighbours(local))
-		{
-			for (size_t i = 1; i < chunks[local.y][local.x]->sectionCount; i++)
-			{
-				chunks[local.y][local.x]->sections[i].floodfill();
-			}
-		}
-		else
-		{
-			genMeshq.enqueue(local);
-		}
-	}
-	for (size_t z = 0; z < chunks.size(); ++z)
-	{
-		for (size_t x = 0; x < chunks.size(); ++x)
-		{
-			for (size_t y = 1; y < chunks[z][x]->sectionCount; y++)
-			{
-				Section& section = chunks[z][x]->sections[y];
-				if (section.buffer.load() && !section.work.load())
-				{
-					sectionMesh[z][x][y]->load(section.vertex, section.color, section.UV, section.AO, section.indicies);
-					sectionMesh[z][x][y]->position = section.position;
-					section.loadBuffer();
-				}
-				/*const int f = camera.getFrustum().CubeInFrustum(glm::vec3(sectionMesh[z][x][y]->position) * 16.f + 8.f, glm::vec3(8));
-				if (f == Frustum::FRUSTUM_INTERSECT || f == Frustum::FRUSTUM_INSIDE)
-				{
-					sectionMesh[z][x][y]->draw();
-					if (sectionMesh[z][x][y]->getCountVertex())
-					{
-						countVertex += sectionMesh[z][x][y]->getCountVertex();
-						countVisibleSection++;
-					}
-				}*/
-			}
-		}
-	}
+	//for (size_t z = 0; z < chunks.size(); ++z)
+	//{
+	//	for (size_t x = 0; x < chunks.size(); ++x)
+	//	{
+	//		for (size_t y = 1; y < chunks[z][x]->sectionCount; y++)
+	//		{
+	//			Section& section = chunks[z][x]->sections[y];
+	//			if (section.buffer.load() && !section.work.load())
+	//			{
+	//				sectionMesh[z][x][y]->load(section.vertex, section.color, section.UV, section.AO, section.indicies);
+	//				sectionMesh[z][x][y]->position = section.position;
+	//				section.loadBuffer();
+	//			}
+	//			/*const int f = camera.getFrustum().CubeInFrustum(glm::vec3(sectionMesh[z][x][y]->position) * 16.f + 8.f, glm::vec3(8));
+	//			if (f == Frustum::FRUSTUM_INTERSECT || f == Frustum::FRUSTUM_INSIDE)
+	//			{
+	//				sectionMesh[z][x][y]->draw();
+	//				if (sectionMesh[z][x][y]->getCountVertex())
+	//				{
+	//					countVertex += sectionMesh[z][x][y]->getCountVertex();
+	//					countVisibleSection++;
+	//				}
+	//			}*/
+	//		}
+	//	}
+	//}
 	const int xp = static_cast<int32_t>(player.getPosition().x);
 	const int yp = static_cast<int32_t>(player.getPosition().y);
 	const int zp = static_cast<int32_t>(player.getPosition().z);
@@ -343,108 +328,21 @@ void World::draw()
 	const int a = player.getRenderDistance() * 2 + 1;
 	glm::ivec3 startSection(playerPos.x - player.getRenderDistance(), 0, playerPos.z - player.getRenderDistance());
 	glm::ivec3 local = playerPos - glm::ivec3(startSection.x, -5, startSection.z);
-	std::queue<std::tuple<glm::ivec3, Enums::Culling, std::vector<bool>>> sCull;
-	std::queue<glm::ivec3> sCullR;
-	std::vector<std::vector<std::vector<bool>>> sv(a, std::vector<std::vector<bool>>(a, std::vector<bool>(26, false)));
-	auto norm = [&](Enums::Direction d) -> bool { return glm::dot(glm::vec3(Enums::getVecFacing(d)), camera.getLook()) < 0; };
-	sCull.push({ playerPos, static_cast<Enums::Culling>(-1), {0,0,0,0,0,0} });
-	sv[local.z][local.x][local.y] = true;
-	if (ImGui::IsKeyReleased(GLFW_KEY_KP_1))
-	{
-		Section* s = getSection(playerPos);
-		s->floodfill();
-	}
-	Enums::Culling oppositeFace[6]
-	{
-		Enums::Culling::WEST,
-		Enums::Culling::EAST,
-		Enums::Culling::DOWN,
-		Enums::Culling::UP,
-		Enums::Culling::NORTH,
-		Enums::Culling::SOUTH
-	};
-	while (!sCull.empty())
-	{
-		const std::tuple<glm::ivec3, Enums::Culling, std::vector<bool>> top = sCull.front();
-		const glm::ivec3& pos = std::get<0>(top);
-		Section* section = getSection(pos);
-		if (section)
-		{
-			auto visit = [&](int z, int x, int y, Enums::Culling c) -> bool
-			{
-				std::vector<bool> dir = std::get<2>(top);
-				if (dir[static_cast<int>(oppositeFace[static_cast<int>(c)])])
-					return false;
-				Section* sec = getSection({ x, y, z });
-				if (!sec)
-					return false;
-				int lz = z - startSection.z;
-				int ly = y + 5;
-				int lx = x - startSection.x;
-				if (ly < 0)
-					return false;
-				if (sv[lz][lx][ly])
-					return false;
-				if (static_cast<int>(std::get<1>(top)) != -1)
-				{
-					if (section && !section->flood[static_cast<int>(std::get<1>(top))][static_cast<int>(c)])
-						return false;
-				}
-				sv[lz][lx][ly] = true;
-
-				dir[static_cast<int>(c)] = 1;
-				sCull.push({ {x, y, z}, oppositeFace[static_cast<int>(c)], dir });
-				return true;
-			};
-
-			visit(pos.z, pos.x + 1, pos.y, Enums::Culling::WEST);
-			visit(pos.z, pos.x - 1, pos.y, Enums::Culling::EAST);
-			visit(pos.z, pos.x, pos.y + 1, Enums::Culling::DOWN);
-			visit(pos.z, pos.x, pos.y - 1, Enums::Culling::UP);
-			visit(pos.z + 1, pos.x, pos.y, Enums::Culling::NORTH);
-			visit(pos.z - 1, pos.x, pos.y, Enums::Culling::SOUTH);
-		}
-		sCull.pop();
-	}
-	/*while (!sCullR.empty())
-	{
-		const glm::ivec3& pos = sCullR.front();
-		const int xp = static_cast<int32_t>(player.getPosition().x);
-		const int yp = static_cast<int32_t>(player.getPosition().y);
-		const int zp = static_cast<int32_t>(player.getPosition().z);
-		const glm::ivec3 playerPos(xp >> 4, yp >> 4, zp >> 4);
-		const int a = player.getRenderDistance() * 2 + 1;
-		const glm::ivec3 startSection = playerPos - glm::ivec3(player.getRenderDistance(), 0, player.getRenderDistance());
-		const glm::ivec3 local = pos - glm::ivec3(startSection.x, -4, startSection.z);
-		const int f = camera.getFrustum().CubeInFrustum(glm::vec3(sectionMesh[local.z][local.x][local.y]->position) * 16.f + 8.f, glm::vec3(8));
-		if (true)
-		{
-			sectionMesh[local.z][local.x][local.y]->draw();
-			if (sectionMesh[local.z][local.x][local.y]->getCountVertex())
-			{
-				countVertex += sectionMesh[local.z][local.x][local.y]->getCountVertex();
-				countVisibleSection++;
-			}
-		}
-		sCullR.pop();
-	}*/
+	
 	for (size_t z = 0; z < chunks.size(); ++z)
 	{
 		for (size_t x = 0; x < chunks.size(); ++x)
 		{
 			for (size_t y = 1; y < chunks[z][x]->sectionCount; y++)
 			{
-				if (sv[z][x][y])
+				const int f = camera.getFrustum().CubeInFrustum(glm::vec3(sectionMesh[z][x][y]->position) * 16.f + 8.f, glm::vec3(8));
+				if (f == Frustum::FRUSTUM_INSIDE || f == Frustum::FRUSTUM_INTERSECT)
 				{
-					const int f = camera.getFrustum().CubeInFrustum(glm::vec3(sectionMesh[z][x][y]->position) * 16.f + 8.f, glm::vec3(8));
-					if (true)
+					sectionMesh[z][x][y]->draw();
+					if (sectionMesh[z][x][y]->getCountVertex())
 					{
-						sectionMesh[z][x][y]->draw();
-						if (sectionMesh[z][x][y]->getCountVertex())
-						{
-							countVertex += sectionMesh[z][x][y]->getCountVertex();
-							countVisibleSection++;
-						}
+						countVertex += sectionMesh[z][x][y]->getCountVertex();
+						countVisibleSection++;
 					}
 				}
 			}

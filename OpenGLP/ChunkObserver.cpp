@@ -8,12 +8,12 @@ ChunkObserver::ChunkObserver(World& world) : world(world)
 {
 }
 
-void ChunkObserver::handle(const Event& event)
+void ChunkObserver::handle(const Event* event)
 {
-	if (event.type() == Events::ChunkNeedLoadEvent)
+	if (event->type() == Events::ChunkNeedLoadEvent)
 	{
-		const ChunkNeedLoadEvent& chunkNeedLoadEvent = static_cast<const ChunkNeedLoadEvent&>(event);
-		const glm::ivec2& position = chunkNeedLoadEvent.position;
+		const ChunkNeedLoadEvent* chunkNeedLoadEvent = static_cast<const ChunkNeedLoadEvent*>(event);
+		const glm::ivec2& position = chunkNeedLoadEvent->position;
 		std::async(std::launch::async, [&]()
 			{
 				const glm::ivec2& local = world.getLocalPositionChunk(position);
@@ -247,10 +247,10 @@ void ChunkObserver::handle(const Event& event)
 				}*/
 			});
 	}
-	else if (event.type() == Events::ChunkNeedMeshEvent)
+	else if (event->type() == Events::ChunkNeedMeshEvent)
 	{
-		const ChunkNeedMeshEvent& chunkNeedMeshEvent = static_cast<const ChunkNeedMeshEvent&>(event);
-		const glm::ivec2& position = chunkNeedMeshEvent.position;
+		const ChunkNeedMeshEvent* chunkNeedMeshEvent = static_cast<const ChunkNeedMeshEvent*>(event);
+		const glm::ivec2& position = chunkNeedMeshEvent->position;
 		std::async(std::launch::async, [&]()
 			{
 				const glm::ivec2& local = world.getLocalPositionChunk(position);
@@ -268,10 +268,10 @@ void ChunkObserver::handle(const Event& event)
 				chunk.setWork(false);
 			});
 	}
-	else if (event.type() == Events::ChunkNeedBufferEvent)
+	else if (event->type() == Events::ChunkNeedBufferEvent)
 	{
-		const ChunkNeedBufferEvent& chunkNeedBufferEvent = static_cast<const ChunkNeedBufferEvent&>(event);
-		const glm::ivec2& position = chunkNeedBufferEvent.position;
+		const ChunkNeedBufferEvent* chunkNeedBufferEvent = static_cast<const ChunkNeedBufferEvent*>(event);
+		const glm::ivec2& position = chunkNeedBufferEvent->position;
 		std::async(std::launch::async, [&]()
 			{
 				const glm::ivec2& local = world.getLocalPositionChunk(position);

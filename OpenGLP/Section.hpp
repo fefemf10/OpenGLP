@@ -10,8 +10,8 @@ struct Section
 	static PaletteItem stone;
 	Section(World& world);
 	Section(const Section& other) noexcept;
-	static const glm::i8vec3& validPos(const glm::i8vec3& pos) noexcept;
-	static const glm::ivec3& validSectionPos(const glm::i8vec3& pos) noexcept;
+	static glm::i8vec3 validPos(const glm::i8vec3& pos) noexcept;
+	static glm::ivec3 validSectionPos(const glm::i8vec3& pos) noexcept;
 	bool hasOnlyAir() const;
 	std::vector<int8_t> blockLight;
 	std::vector<int8_t> skyLight;
@@ -26,7 +26,6 @@ struct Section
 	  4
 	  0*/
 	glm::ivec3 position{};
-	void floodfill();
 	const PaletteItem& getBlock(const glm::i8vec3& blockPos);
 	uint8_t bitsPerBlock{};
 	uint8_t bitsPerBiome{};

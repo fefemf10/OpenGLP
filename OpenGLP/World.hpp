@@ -4,6 +4,7 @@
 #include <random>
 #include <vector>
 #include <thread>
+#include <atomic>
 #include <GLM/glm.hpp>
 #include <GLEW/glew.h>
 #include <GLFW/glfw3.h>
@@ -18,6 +19,7 @@
 #include "Dispatcher.hpp"
 #include "ChunkObserver.hpp"
 #include "WorldInfo.hpp"
+
 class World
 {
 public:

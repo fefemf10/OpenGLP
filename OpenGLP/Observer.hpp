@@ -4,6 +4,6 @@ class Observer
 {
 public:
 	virtual ~Observer() = default;
-	virtual void handle(const Event& event) = 0;
+	virtual void handle(const Event* event) = 0;
 };
 

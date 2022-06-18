@@ -1,13 +1,5 @@
 #pragma once
-#include "glm/vec2.hpp"
-class Event
-{
-public:
-	virtual ~Event() = default;
-	virtual Events type() const;
-protected:
-	Events event{};
-};
+#include "GLM/vec2.hpp"
 
 enum class Events
 {
@@ -18,6 +10,16 @@ enum class Events
 	ChunkLoadedEvent,
 	ChunkFloodfilledEvent,
 	ChunkMeshedEvent
+};
+
+class Event
+{
+public:
+	Event() = default;
+	virtual ~Event() = default;
+	virtual Events type() const;
+protected:
+	Events event{};
 };
 
 class ChunkEvent : public Event

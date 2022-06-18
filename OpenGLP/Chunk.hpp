@@ -1,7 +1,6 @@
 #pragma once
 #include "Section.hpp"
-
-enum class State;
+#include "State.hpp"
 
 class Chunk
 {

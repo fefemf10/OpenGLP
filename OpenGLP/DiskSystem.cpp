@@ -1,6 +1,7 @@
 #include "DiskSystem.hpp"
 #include "NBTFile.hpp"
 #include "WorldInfo.hpp"
+#include <GLM/gtx/hash.hpp>
 
 std::filesystem::path DiskSystem::worldDir;
 WorldInfo DiskSystem::worldInfo;

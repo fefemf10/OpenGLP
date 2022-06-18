@@ -7,7 +7,7 @@ class ChunkObserver : public Observer
 {
 public:
 	ChunkObserver(World& world);
-	void handle(const Event& event) override;
+	void handle(const Event* event) override;
 private:
 	World& world;
 };

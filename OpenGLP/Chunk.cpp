@@ -1,5 +1,4 @@
 #include "Chunk.hpp"
-#include "State.hpp"
 
 void Chunk::genMesh()
 {
