@@ -46,9 +46,10 @@ public:
 	std::vector<std::vector<Chunk*>> chunks;
 	std::vector<std::vector<std::vector<SectionMesh*>>> sectionMesh;
 	queuep genMeshq;
+	bool loadedNeighbours(const glm::ivec2& position);
 private:
 	
-	bool loadedNeighbours(const glm::ivec2& position);
+	
 	glm::uvec2 endLocalPosChunk;
 	ThreadPool poolChunks;
 	Player& player;

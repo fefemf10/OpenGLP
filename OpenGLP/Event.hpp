@@ -4,11 +4,9 @@
 enum class Events
 {
 	ChunkNeedLoadEvent,
-	ChunkNeedFloodfillEvent,
 	ChunkNeedMeshEvent,
 	ChunkNeedBufferEvent,
 	ChunkLoadedEvent,
-	ChunkFloodfilledEvent,
 	ChunkMeshedEvent
 };
 
@@ -35,12 +33,6 @@ public:
 	ChunkNeedLoadEvent(const glm::ivec2& position) : ChunkEvent(position) { event = Events::ChunkNeedLoadEvent; };
 };
 
-class ChunkNeedFloodfillEvent : public ChunkEvent
-{
-public:
-	ChunkNeedFloodfillEvent(const glm::ivec2& position) : ChunkEvent(position) { event = Events::ChunkNeedFloodfillEvent; };
-};
-
 class ChunkNeedMeshEvent : public ChunkEvent
 {
 public:
@@ -57,12 +49,6 @@ class ChunkLoadedEvent : public ChunkEvent
 {
 public:
 	ChunkLoadedEvent(const glm::ivec2& position) : ChunkEvent(position) { event = Events::ChunkLoadedEvent; };
-};
-
-class ChunkFloodfilledEvent : public ChunkEvent
-{
-public:
-	ChunkFloodfilledEvent(const glm::ivec2& position) : ChunkEvent(position) { event = Events::ChunkFloodfilledEvent; };
 };
 
 class ChunkMeshedEvent : public ChunkEvent

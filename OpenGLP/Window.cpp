@@ -83,7 +83,7 @@ void Window::loop()
 	Player player;
 	player.setRenderDistance(dist);
 	Camera camera(player);
-	DiskSystem::loadWorld("118");
+	DiskSystem::loadWorld("119");
 	World world(player, camera);
 
 	shader.setMatrix("projection", 1, GL_FALSE, camera.getProjection());

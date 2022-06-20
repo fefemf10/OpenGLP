@@ -13,7 +13,7 @@ void ChunkObserver::handle(const Event* event)
 	if (event->type() == Events::ChunkNeedLoadEvent)
 	{
 		const ChunkNeedLoadEvent* chunkNeedLoadEvent = static_cast<const ChunkNeedLoadEvent*>(event);
-		const glm::ivec2& position = chunkNeedLoadEvent->position;
+		const glm::ivec2 position = chunkNeedLoadEvent->position;
 		std::async(std::launch::async, [&]()
 			{
 				const glm::ivec2& local = world.getLocalPositionChunk(position);
@@ -250,7 +250,7 @@ void ChunkObserver::handle(const Event* event)
 	else if (event->type() == Events::ChunkNeedMeshEvent)
 	{
 		const ChunkNeedMeshEvent* chunkNeedMeshEvent = static_cast<const ChunkNeedMeshEvent*>(event);
-		const glm::ivec2& position = chunkNeedMeshEvent->position;
+		glm::ivec2 position = chunkNeedMeshEvent->position;
 		std::async(std::launch::async, [&]()
 			{
 				const glm::ivec2& local = world.getLocalPositionChunk(position);
@@ -271,31 +271,23 @@ void ChunkObserver::handle(const Event* event)
 	else if (event->type() == Events::ChunkNeedBufferEvent)
 	{
 		const ChunkNeedBufferEvent* chunkNeedBufferEvent = static_cast<const ChunkNeedBufferEvent*>(event);
-		const glm::ivec2& position = chunkNeedBufferEvent->position;
-		std::async(std::launch::async, [&]()
-			{
-				const glm::ivec2& local = world.getLocalPositionChunk(position);
-				if (!world.validateLocalPosChunk(local))
-					return;
-				Chunk& chunk = *(world.chunks[local.y][local.x]);
-				for (size_t i = 1; i < chunk.sectionCount; i++)
-				{
-					SectionMesh& sectionMesh = *(world.sectionMesh[local.y][local.x][i]);
-					Section& section = chunk.sections[i];
-					sectionMesh.load(section.vertex, section.color, section.UV, section.AO, section.indicies);
-					sectionMesh.position = section.position;
-					section.loadBuffer();
-				}
-				
-				chunk.work.wait(true);
-				chunk.setWork(true);
-				if (chunk.state.load() == State::Modified)
-				{
-					chunk.genMesh();
-					chunk.state.store(State::Buffered);
-					world.genMeshq.enqueue(local);
-				}
-				chunk.setWork(false);
-			});
+		const glm::ivec2 position = chunkNeedBufferEvent->position;
+
+		const glm::ivec2& local = world.getLocalPositionChunk(position);
+		if (!world.validateLocalPosChunk(local))
+			return;
+		Chunk& chunk = *(world.chunks[local.y][local.x]);
+		chunk.work.wait(true);
+		chunk.setWork(true);
+		for (size_t i = 1; i < chunk.sectionCount; i++)
+		{
+			SectionMesh& sectionMesh = *(world.sectionMesh[local.y][local.x][i]);
+			Section& section = chunk.sections[i];
+			sectionMesh.load(section.vertex, section.color, section.UV, section.AO, section.indicies);
+			sectionMesh.position = section.position;
+			section.loadBuffer();
+		}
+		chunk.state.store(State::Full);
+		chunk.setWork(false);
 	}
 }

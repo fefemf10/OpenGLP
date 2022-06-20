@@ -27,11 +27,10 @@ World::World(Player& player, Camera& camera) : player(player), camera(camera), p
 	loadChunks();
 	firstLoad = false;
 	dispatcher.subscribe(Events::ChunkLoadedEvent, std::bind(&ChunkObserver::handle, chunkObserver, std::placeholders::_1));
-	dispatcher.subscribe(Events::ChunkFloodfilledEvent, std::bind(&ChunkObserver::handle, chunkObserver, std::placeholders::_1));
 	dispatcher.subscribe(Events::ChunkMeshedEvent, std::bind(&ChunkObserver::handle, chunkObserver, std::placeholders::_1));
 	dispatcher.subscribe(Events::ChunkNeedLoadEvent, std::bind(&ChunkObserver::handle, chunkObserver, std::placeholders::_1));
-	dispatcher.subscribe(Events::ChunkNeedFloodfillEvent, std::bind(&ChunkObserver::handle, chunkObserver, std::placeholders::_1));
 	dispatcher.subscribe(Events::ChunkNeedMeshEvent, std::bind(&ChunkObserver::handle, chunkObserver, std::placeholders::_1));
+	dispatcher.subscribe(Events::ChunkNeedBufferEvent, std::bind(&ChunkObserver::handle, chunkObserver, std::placeholders::_1));
 }
 
 void World::saveWorld()
@@ -375,13 +374,13 @@ bool World::loadedNeighbours(const glm::ivec2& position)
 {
 	bool f{ true };
 	if (validateLocalPosChunk(glm::ivec2(position.x + 1, position.y)))
-		f &= chunks[position.y][position.x + 1]->state.load() == State::Loaded;
+		f &= chunks[position.y][position.x + 1]->state.load() != State::Empty;
 	if (validateLocalPosChunk(glm::ivec2(position.x - 1, position.y)))
-		f &= chunks[position.y][position.x - 1]->state.load() == State::Loaded;
+		f &= chunks[position.y][position.x - 1]->state.load() != State::Empty;
 	if (validateLocalPosChunk(glm::ivec2(position.x, position.y + 1)))
-		f &= chunks[position.y + 1][position.x]->state.load() == State::Loaded;
+		f &= chunks[position.y + 1][position.x]->state.load() != State::Empty;
 	if (validateLocalPosChunk(glm::ivec2(position.x, position.y - 1)))
-		f &= chunks[position.y - 1][position.x]->state.load() == State::Loaded;
+		f &= chunks[position.y - 1][position.x]->state.load() != State::Empty;
 	return f;
 }
 
